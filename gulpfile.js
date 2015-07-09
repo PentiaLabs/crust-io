@@ -10,7 +10,7 @@ var Q = require('q');
 var serverPort = 9000;
 var $ = require('gulp-load-plugins')();
 var _ = require('lodash');
-var marked = require('marked');
+var marked = require('swig-marked');
 var fs = require('fs');
 
 var sourceFolder = 'app/source';
@@ -31,11 +31,12 @@ var dirTree = function (filename) {
 
 var generate = function (childnode) {
   var name = childnode.name,
-      children = childnode.children,
-      type = childnode.type,
-      mdpath,
-      mdcontent,
-      generatedcontent;
+  children = childnode.children,
+  type = childnode.type,
+  mdpath,
+  mdcontent,
+  generatedcontent,
+  opts;
 
   if (name === '..' || name === '') {
     return;
@@ -45,20 +46,29 @@ var generate = function (childnode) {
     mdpath = path.join(__dirname, sourceFolder, childnode.path, 'content.md');
 
     // TODO: check for existing md
+    if (fs.existsSync(mdpath)) {
+      mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');
 
-    mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');
+      console.log('Generate', childnode.path, '(', mdpath, ')');
 
-    console.log('Generate', childnode.path, '(', mdpath, ')');
+      console.log('mdcontent:', mdcontent);
 
-    generatedcontent = marked(mdcontent);
+      opts = {
+        setup: function(swig) {
+         marked.useTag(swig, 'markdown');
+       },
+       defaults: { cache: false }
+     };
 
-    console.log(generatedcontent);
-    // TODO: put generatedcontent into swig
-
-    // TODO: put it into the correct destfolder
-
-    _.each(children, generate);
+    // put generatedcontent into swig
+    gulp.src('./app/templates/page.html')
+    .pipe($.data({ markdown : mdcontent }))
+    .pipe($.swig({ defaults: { cache: false } }))
+    .pipe(gulp.dest(path.join('.tmp', name + '.html')));
   }
+
+  _.each(children, generate);
+}
 };
 
 gulp.task('styles', function () {
