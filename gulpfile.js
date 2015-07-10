@@ -1,78 +1,13 @@
 /* jshint node:true */
 'use strict';
 
-var dirToJson = require('dir-to-json');
 var gulp = require('gulp');
 var merge = require('merge-stream');
 var moment = require('moment');
 var path = require('path');
-var Q = require('q');
 var serverPort = 9000;
 var $ = require('gulp-load-plugins')();
-var _ = require('lodash');
-var marked = require('marked');
-var fs = require('fs');
-
-var sourceFolder = 'app/source';
-
-var dirTree = function (filename) {
-  var folders = Q.defer();
-
-  dirToJson(filename, function( err, dirTree ){
-    if( err ){
-      throw err;
-    }else{
-      folders.resolve(dirTree);
-    }
-  });
-
-  return folders.promise;
-};
-
-var generate = function (lvl) {
-  var name = lvl.name,
-  children = lvl.children,
-  type = lvl.type,
-  mdpath,
-  mdcontent,
-  opts;
-
-  if (name === '..' || name === '') {
-    return;
-  }
-
-  if (type === 'directory' && children && children.length) {
-    console.log(lvl.path);
-    mdpath = path.join(__dirname, sourceFolder, lvl.path, 'content.md');
-
-    // TODO: check for existing md
-    if (fs.existsSync(mdpath)) {
-      mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');
-
-      console.log('Generate', lvl.path, '(', mdpath, ')');
-
-      console.log('mdcontent:', mdcontent);
-
-      opts = {
-        defaults: { 
-          cache: false,
-          locals : { 
-            markdown: function markdown() {
-              return marked(mdcontent);
-            } 
-          }
-        }
-      };
-
-      // put generatedcontent into swig
-      gulp.src('./app/templates/page.html')
-      .pipe($.swig(opts))
-      .pipe(gulp.dest(path.join('.tmp', name + '.html')));
-  }
-
-  _.each(children, generate);
-}
-};
+var M = require('./mcfly'); // TODO: publish to npm when it's done
 
 gulp.task('styles', function () {
   return gulp.src('app/styles/main.scss')
@@ -93,13 +28,9 @@ gulp.task('jshint', function () {
 });
 
 gulp.task('temp', function () {
-  var dir = path.join(__dirname, sourceFolder);
+  var dir = path.join(__dirname, 'app/source');
 
-  dirTree(dir).then(function (structure) {
-    var children = structure.children;
-
-    _.each(children, generate);
-  }).done();
+  return M.compile(dir, { sourceFolder : 'app/source' , template : './app/templates/page.html' });
 });
 
 gulp.task('template', function () {
