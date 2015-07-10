@@ -15,12 +15,12 @@
 
  var dirToJson = require('dir-to-json');
  var fs = require('fs');
- var gulp = require('gulp');
  var marked = require('marked');
+ var mkdirp = require('mkdirp');
  var path = require('path');
  var Q = require('q');
+ var swig = require('swig');
  var _ = require('lodash');
- var $ = require('gulp-load-plugins')();
 
 /**
  * McFly constructor.
@@ -31,6 +31,8 @@
  function McFly () {
   this.sourceFolder = '';
   this.template = '';
+
+  this.compilationQueue = [];
 }
 
 /**
@@ -52,8 +54,29 @@
   this._dirTree(dir).then(function (structure) {
     var children = structure.children;
 
-    _.each(children, self.generate.bind(self));
+    _.each(children, self.queue.bind(self));
+  }).then(function() {   
+
+    _.each(self.compilationQueue, function (opts) {
+
+      var swigOpts = { 
+          title : opts.level.name,
+          markdown: function markdown() { 
+            return marked(opts.md); 
+          } 
+      };
+
+      var compiled = swig.renderFile(self.template, swigOpts);
+
+      mkdirp.sync(path.join('.tmp', opts.level.path));
+
+      fs.writeFileSync(path.join('.tmp', opts.level.path, opts.level.name + '.html'), compiled);
+
+    });
+
   }).done();
+
+
 };
 
 /**
@@ -78,51 +101,38 @@
  };
 
 /**
- * Recursively generate site from folder structure
+ * Recursively run through and construct queue for site generation from folder structure
  *
  * @param {String} level of file structure to generate from
  * @api public
  */
 
- McFly.prototype.generate = function (level) {
+ McFly.prototype.queue = function (level) {
   var name = level.name,
   children = level.children,
   type = level.type,
-  mdpath,
-  mdcontent,
-  opts;
+  mdpath = '',
+  mdcontent;
 
   if (name === '..' || name === '') {
     return;
   }
 
   if (type === 'directory' && children && children.length) {
+
     mdpath = path.join(__dirname, this.sourceFolder, level.path, 'content.md');
 
     if (fs.existsSync(mdpath)) {
       mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');
 
-      console.log(name);
-
       // set options specifically for each swig generation
-      opts = {
-        defaults: { 
-          cache: false,
-          locals : { 
-            markdown: function markdown() {
-              return marked(mdcontent);
-            } 
-          }
-        }
-      };
-
-      // TODO: make .tmp configurable
-      gulp.src(this.template)
-      .pipe($.swig(opts))
-      .pipe(gulp.dest(path.join('.tmp', level.path)));
+      this.compilationQueue.push({
+        md: mdcontent,
+        level : level
+      });
     }
 
-    _.each(children, this.generate.bind(this));
+    _.each(children, this.queue.bind(this));
   }
 };
 

@@ -30,7 +30,8 @@ gulp.task('jshint', function () {
 gulp.task('temp', function () {
   var dir = path.join(__dirname, 'app/source');
 
-  return M.compile(dir, { sourceFolder : 'app/source' , template : './app/templates/page.html' });
+  // TODO: get streams from M, merge them, and return merged
+  return M.compile(dir, { sourceFolder : 'app/source' , template : path.join(__dirname, '/app/templates/page.html') });
 });
 
 gulp.task('template', function () {
