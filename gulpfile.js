@@ -10,7 +10,7 @@ var Q = require('q');
 var serverPort = 9000;
 var $ = require('gulp-load-plugins')();
 var _ = require('lodash');
-var marked = require('swig-marked');
+var marked = require('marked');
 var fs = require('fs');
 
 var sourceFolder = 'app/source';
@@ -29,13 +29,12 @@ var dirTree = function (filename) {
   return folders.promise;
 };
 
-var generate = function (childnode) {
-  var name = childnode.name,
-  children = childnode.children,
-  type = childnode.type,
+var generate = function (lvl) {
+  var name = lvl.name,
+  children = lvl.children,
+  type = lvl.type,
   mdpath,
   mdcontent,
-  generatedcontent,
   opts;
 
   if (name === '..' || name === '') {
@@ -43,28 +42,32 @@ var generate = function (childnode) {
   }
 
   if (type === 'directory' && children && children.length) {
-    mdpath = path.join(__dirname, sourceFolder, childnode.path, 'content.md');
+    console.log(lvl.path);
+    mdpath = path.join(__dirname, sourceFolder, lvl.path, 'content.md');
 
     // TODO: check for existing md
     if (fs.existsSync(mdpath)) {
       mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');
 
-      console.log('Generate', childnode.path, '(', mdpath, ')');
+      console.log('Generate', lvl.path, '(', mdpath, ')');
 
       console.log('mdcontent:', mdcontent);
 
       opts = {
-        setup: function(swig) {
-         marked.useTag(swig, 'markdown');
-       },
-       defaults: { cache: false }
-     };
+        defaults: { 
+          cache: false,
+          locals : { 
+            markdown: function markdown() {
+              return marked(mdcontent);
+            } 
+          }
+        }
+      };
 
-    // put generatedcontent into swig
-    gulp.src('./app/templates/page.html')
-    .pipe($.data({ markdown : mdcontent }))
-    .pipe($.swig({ defaults: { cache: false } }))
-    .pipe(gulp.dest(path.join('.tmp', name + '.html')));
+      // put generatedcontent into swig
+      gulp.src('./app/templates/page.html')
+      .pipe($.swig(opts))
+      .pipe(gulp.dest(path.join('.tmp', name + '.html')));
   }
 
   _.each(children, generate);

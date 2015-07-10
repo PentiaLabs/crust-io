@@ -47,7 +47,7 @@
     "q": "1.4.1",
     "dir-to-json": "0.0.3",
     "lodash": "3.10.0",
-    "swig-marked": "0.0.1"
+    "marked": "0.3.3"
   },
   "dependencies": {
     "merge-stream": "^0.1.7"
