@@ -33,6 +33,8 @@
   this.template = '';
 
   this.compilationQueue = [];
+
+  this.structure = {};
 }
 
 /**
@@ -54,8 +56,10 @@
   this._dirTree(dir).then(function (structure) {
     var children = structure.children;
 
-    _.each(children, self.queue.bind(self));
-  }).then(function() {   
+    self.structure = structure;
+
+    _.each(children, self._traverse.bind(self));
+  }).then(function() {
 
     _.each(self.compilationQueue, function (opts) {
 
@@ -63,7 +67,7 @@
           title : opts.level.name,
           markdown: function markdown() { 
             return marked(opts.md); 
-          } 
+          }
       };
 
       var compiled = swig.renderFile(self.template, swigOpts);
@@ -100,18 +104,48 @@
    return folders.promise;
  };
 
+// /**
+//  * Let's find out which level a directory lies at
+//  *
+//  * @param {String} Complete filepath
+//  * @api private
+//  */
+
+//  McFly.prototype._readLevel = function (filepath) {
+//     return (filepath.split('\\').length - 1); // TODO: make sure that slash is right according to file system
+//  };
+
+//  /**
+//  * Sort out a hierarchy structure that we can use in our menu generation
+//  *
+//  * @param {String} filepath for a folder in the structure
+//  * @api private
+//  */
+
+//  McFly.prototype._createStructure = function (parts) {
+//   var obj = {};
+
+//   if (parts.length === 1) {
+//     return parts[0];
+//   }
+    
+//   obj[parts.shift()] = this._createStructure(parts);
+
+//   return obj;
+// };
+
 /**
  * Recursively run through and construct queue for site generation from folder structure
  *
  * @param {String} level of file structure to generate from
- * @api public
+ * @api private
  */
 
- McFly.prototype.queue = function (level) {
+ McFly.prototype._traverse = function (level) {
   var name = level.name,
   children = level.children,
   type = level.type,
-  mdpath = '',
+  mdpath,
   mdcontent;
 
   if (name === '..' || name === '') {
@@ -132,7 +166,7 @@
       });
     }
 
-    _.each(children, this.queue.bind(this));
+    _.each(children, this._traverse.bind(this));
   }
 };
 
