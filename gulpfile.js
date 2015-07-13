@@ -27,11 +27,11 @@ gulp.task('jshint', function () {
   .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('temp', function () {
+gulp.task('mcfly', function () {
   var dir = path.join(__dirname, 'app/source');
 
   // TODO: get streams from M, merge them, and return merged
-  return M.compile(dir, { sourceFolder : 'app/source' , template : path.join(__dirname, '/app/templates/page.html') });
+  return M.compile(dir, { sourceFolder : 'app/source' , template : path.join(__dirname, '/app/templates/pages/page.html') });
 });
 
 gulp.task('template', function () {

@@ -1,0 +1,23 @@
+<header>
+	<nav>
+		{% for child in children %}
+			{% if loop.first %}<ul>{% endif %}
+			<li {% if loop.first %}class="active"{% endif %}><a href="{{ child.name }}/index.html">{{ child.name }}</a></li>
+			{% if loop.last %}</ul>{% endif %}
+		{% endfor %}
+	</nav>
+
+	{% if siblings %}
+		<nav>
+			{% for sibling in siblings %}
+				{% if loop.first %}<ul>{% endif %}
+				<li {% if sibling.selected %}class="active"{% endif %}><a href="{{ sibling.name }}/index.html">{{ sibling.name }}</a></li>
+				{% if loop.last %}</ul>{% endif %}
+			{% endfor %}
+		</nav>
+	{% endif %}
+
+	{% if level == 2 %}
+	<p>I'm level 2</p>
+	{% endif %}
+</header>

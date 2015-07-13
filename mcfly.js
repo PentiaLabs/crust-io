@@ -60,21 +60,50 @@
 
     _.each(children, self._traverse.bind(self));
   }).then(function() {
-
+    
     _.each(self.compilationQueue, function (opts) {
+
+      var level = self._readLevel(opts.level.path);
+      var parent, parentNode;
+      var siblings = [];
 
       var swigOpts = { 
           title : opts.level.name,
           markdown: function markdown() { 
             return marked(opts.md); 
-          }
+          },
+          children: self.structure.children
       };
+
+      // if we're on level 1, we want to list our siblings in a submenu
+      if (level === 1) {
+        parent = opts.level.path.split('\\')[0];
+        parentNode = _.filter(self.structure.children, function (child) {
+          return child.name === parent;
+        })[0];
+
+        siblings = _.filter(parentNode.children, function (child) {
+          if (child.name === opts.level.name) {
+            child.selected = true;
+          }else{
+            child.selected = false;
+          }
+
+          return child.type === 'directory';
+        });
+
+        swigOpts.siblings = siblings;
+      }
+
+      if (level === 2) {
+        
+      }
 
       var compiled = swig.renderFile(self.template, swigOpts);
 
       mkdirp.sync(path.join('.tmp', opts.level.path));
 
-      fs.writeFileSync(path.join('.tmp', opts.level.path, opts.level.name + '.html'), compiled);
+      fs.writeFileSync(path.join('.tmp', opts.level.path, 'index.html'), compiled);
 
     });
 
@@ -104,16 +133,16 @@
    return folders.promise;
  };
 
-// /**
-//  * Let's find out which level a directory lies at
-//  *
-//  * @param {String} Complete filepath
-//  * @api private
-//  */
+/**
+ * Let's find out which level a directory lies at
+ *
+ * @param {String} Complete filepath
+ * @api private
+ */
 
-//  McFly.prototype._readLevel = function (filepath) {
-//     return (filepath.split('\\').length - 1); // TODO: make sure that slash is right according to file system
-//  };
+ McFly.prototype._readLevel = function (filepath) {
+    return (filepath.split('\\').length - 1); // TODO: make sure that slash is right according to file system
+ };
 
 //  /**
 //  * Sort out a hierarchy structure that we can use in our menu generation
