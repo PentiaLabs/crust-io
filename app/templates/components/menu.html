@@ -1,23 +1,24 @@
 <header>
 	<nav>
-		{% for child in children %}
+		{% for menu in menus.primary %}
 			{% if loop.first %}<ul>{% endif %}
-			<li {% if loop.first %}class="active"{% endif %}><a href="{{ child.name }}/index.html">{{ child.name }}</a></li>
+			<li {% if loop.first %}class="active"{% endif %}><a href="/{{ menu.webPath }}/">{{ menu.name }}</a></li>
 			{% if loop.last %}</ul>{% endif %}
 		{% endfor %}
 	</nav>
 
-	{% if siblings %}
+	{% if menus.secondary %}
 		<nav>
-			{% for sibling in siblings %}
-				{% if loop.first %}<ul>{% endif %}
-				<li {% if sibling.selected %}class="active"{% endif %}><a href="{{ sibling.name }}/index.html">{{ sibling.name }}</a></li>
+			{% for menu in menus.secondary %}
+				{% if loop.first %}
+					<ul>
+					{% if secondaryParentName %}
+					<li>{{ secondaryParentName }}</li>
+					{% endif %}
+				{% endif %}
+				<li {% if menu.selected %}class="active"{% endif %}><a href="/{{ menu.webPath }}/">{{ menu.name }}</a></li>
 				{% if loop.last %}</ul>{% endif %}
 			{% endfor %}
 		</nav>
-	{% endif %}
-
-	{% if level == 2 %}
-	<p>I'm level 2</p>
 	{% endif %}
 </header>

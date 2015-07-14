@@ -64,39 +64,66 @@
     _.each(self.compilationQueue, function (opts) {
 
       var level = self._readLevel(opts.level.path);
-      var parent, parentNode;
-      var siblings = [];
+      var primaryParentName = opts.level.path.split('\\')[0];
+      var primaryParentNode, secondaryParentNode, base;
 
       var swigOpts = { 
           title : opts.level.name,
           markdown: function markdown() { 
             return marked(opts.md); 
           },
-          children: self.structure.children
+          menus: {
+            primary : self.structure.children,
+            secondary : null,
+            base : ''
+          }
       };
 
-      // if we're on level 1, we want to list our siblings in a submenu
-      if (level === 1) {
-        parent = opts.level.path.split('\\')[0];
-        parentNode = _.filter(self.structure.children, function (child) {
-          return child.name === parent;
+      // TOD: methodize all of this
+      primaryParentNode = _.filter(self.structure.children, function (child) {
+        child.webPath = child.path.replace(/\\/g, '/');
+
+        return child.name === primaryParentName;
+      })[0];
+    
+      swigOpts.menus.secondary = _.filter(primaryParentNode.children, function (child) {
+        if (child.name === opts.level.name) {
+          child.selected = true;
+        }else{
+          child.selected = false;
+        }
+
+        child.webPath = child.path.replace(/\\/g, '/');
+
+        return child.type === 'directory';
+      });
+
+      // TODO: if we're on level 1, we also need to show the children...
+
+      if (level === 2) {
+        swigOpts.secondaryParentName = opts.level.path.split('\\')[1];
+
+        secondaryParentNode = _.filter(primaryParentNode.children, function (child) {
+          return child.name === swigOpts.secondaryParentName;
         })[0];
 
-        siblings = _.filter(parentNode.children, function (child) {
+        swigOpts.menus.secondary = _.filter(secondaryParentNode.children, function (child) {
           if (child.name === opts.level.name) {
             child.selected = true;
           }else{
             child.selected = false;
           }
 
+          child.webPath = child.path.replace(/\\/g, '/');
+
           return child.type === 'directory';
         });
 
-        swigOpts.siblings = siblings;
-      }
+        base = opts.level.path.split('\\');
+        base.pop();
+        base = base.join('\/');
 
-      if (level === 2) {
-        
+        swigOpts.base = '/' + base;
       }
 
       var compiled = swig.renderFile(self.template, swigOpts);
