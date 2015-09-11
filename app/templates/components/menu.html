@@ -1,24 +1,20 @@
-<header>
-	<nav>
-		{% for menu in menus.primary %}
-			{% if loop.first %}<ul>{% endif %}
-			<li {% if loop.first %}class="active"{% endif %}><a href="/{{ menu.webPath }}/">{{ menu.name }}</a></li>
-			{% if loop.last %}</ul>{% endif %}
-		{% endfor %}
-	</nav>
-
-	{% if menus.secondary %}
-		<nav>
-			{% for menu in menus.secondary %}
-				{% if loop.first %}
-					<ul>
-					{% if secondaryParentName %}
-					<li>{{ secondaryParentName }}</li>
-					{% endif %}
+{% macro renderMenu(menuStructure) %}
+	<ul>
+		<li><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+		<li>
+			{% for child in menuStructure.children %}
+				{% if child.type === 'directory' %}
+					{{ renderMenu(child) }}
 				{% endif %}
-				<li {% if menu.selected %}class="active"{% endif %}><a href="/{{ menu.webPath }}/">{{ menu.name }}</a></li>
-				{% if loop.last %}</ul>{% endif %}
 			{% endfor %}
-		</nav>
-	{% endif %}
+		</li>
+	</ul>
+{% endmacro %}
+
+<header>
+	{% for menu in structure %}
+		{% if menu.type === 'directory' %}
+			{{ renderMenu(menu) }}
+		{% endif %}
+	{% endfor %}
 </header>

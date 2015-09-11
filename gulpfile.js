@@ -31,7 +31,11 @@ gulp.task('mcfly', function () {
   var dir = path.join(__dirname, 'app/source');
 
   // TODO: get streams from M, merge them, and return merged
-  return M.compile(dir, { sourceFolder : 'app/source' , template : path.join(__dirname, '/app/templates/pages/page.html') });
+  return M.compile(dir, { 
+    sourceFolder : 'app/source',
+    templateFolder : path.join(__dirname, '/app/templates/pages/')
+  });
+
 });
 
 gulp.task('template', function () {

@@ -15,11 +15,13 @@
 
  var dirToJson = require('dir-to-json');
  var fs = require('fs');
- var marked = require('marked');
+ var walkSync = require('walk-sync');
  var mkdirp = require('mkdirp');
+ var marked = require('marked');
  var path = require('path');
  var Q = require('q');
  var swig = require('swig');
+ var yaml = require('js-yaml');
  var _ = require('lodash');
 
 /**
@@ -29,12 +31,11 @@
  */
 
  function McFly () {
-  this.sourceFolder = '';
-  this.template = '';
-
   this.compilationQueue = [];
-
+  this.sourceFolder = '';
+  this.templateFolder = '';
   this.structure = {};
+  this.menuStructure = [];
 }
 
 /**
@@ -51,86 +52,38 @@
   var self = this;
 
   this.sourceFolder = opts.sourceFolder;
-  this.template = opts.template;
+  this.templateFolder = opts.templateFolder;
 
   this._dirTree(dir).then(function (structure) {
     var children = structure.children;
 
-    self.structure = structure;
+    self.structure = [];
+    self.structure.push(structure);
 
     _.each(children, self._traverse.bind(self));
-  }).then(function() {
-    
-    _.each(self.compilationQueue, function (opts) {
+  }).then(function () {
+    _.each(self.compilationQueue, function (pageData) {
+      var config = yaml.safeLoad(pageData.md);
 
-      var level = self._readLevel(opts.level.path);
-      var primaryParentName = opts.level.path.split('\\')[0];
-      var primaryParentNode, secondaryParentNode, base;
-
-      var swigOpts = { 
-          title : opts.level.name,
-          markdown: function markdown() { 
-            return marked(opts.md); 
-          },
-          menus: {
-            primary : self.structure.children,
-            secondary : null,
-            base : ''
-          }
-      };
-
-      // TOD: methodize all of this
-      primaryParentNode = _.filter(self.structure.children, function (child) {
-        child.webPath = child.path.replace(/\\/g, '/');
-
-        return child.name === primaryParentName;
-      })[0];
-    
-      swigOpts.menus.secondary = _.filter(primaryParentNode.children, function (child) {
-        if (child.name === opts.level.name) {
-          child.selected = true;
-        }else{
-          child.selected = false;
-        }
-
-        child.webPath = child.path.replace(/\\/g, '/');
-
-        return child.type === 'directory';
-      });
-
-      // TODO: if we're on level 1, we also need to show the children...
-
-      if (level === 2) {
-        swigOpts.secondaryParentName = opts.level.path.split('\\')[1];
-
-        secondaryParentNode = _.filter(primaryParentNode.children, function (child) {
-          return child.name === swigOpts.secondaryParentName;
-        })[0];
-
-        swigOpts.menus.secondary = _.filter(secondaryParentNode.children, function (child) {
-          if (child.name === opts.level.name) {
-            child.selected = true;
-          }else{
-            child.selected = false;
-          }
-
-          child.webPath = child.path.replace(/\\/g, '/');
-
-          return child.type === 'directory';
-        });
-
-        base = opts.level.path.split('\\');
-        base.pop();
-        base = base.join('\/');
-
-        swigOpts.base = '/' + base;
+      if (typeof config.template === 'undefined') {
+        throw('Markdown files in source must contain a page type configuration.');
       }
 
-      var compiled = swig.renderFile(self.template, swigOpts);
+      var swigOpts = { 
+          title : pageData.structure.name,
+          structure: self.structure[0].children,
+          markdown: function markdown() { 
+            return marked(pageData.md); 
+          }
+      };
+      
+      var template = path.join(self.templateFolder, config.template + '.html');
 
-      mkdirp.sync(path.join('.tmp', opts.level.path));
+      var compiled = swig.renderFile(template, swigOpts);
 
-      fs.writeFileSync(path.join('.tmp', opts.level.path, 'index.html'), compiled);
+      mkdirp.sync(path.join('.tmp', pageData.structure.path));
+
+      fs.writeFileSync(path.join('.tmp', pageData.structure.path, 'index.html'), compiled);
 
     });
 
@@ -169,26 +122,7 @@
 
  McFly.prototype._readLevel = function (filepath) {
     return (filepath.split('\\').length - 1); // TODO: make sure that slash is right according to file system
- };
-
-//  /**
-//  * Sort out a hierarchy structure that we can use in our menu generation
-//  *
-//  * @param {String} filepath for a folder in the structure
-//  * @api private
-//  */
-
-//  McFly.prototype._createStructure = function (parts) {
-//   var obj = {};
-
-//   if (parts.length === 1) {
-//     return parts[0];
-//   }
-    
-//   obj[parts.shift()] = this._createStructure(parts);
-
-//   return obj;
-// };
+  };
 
 /**
  * Recursively run through and construct queue for site generation from folder structure
@@ -218,7 +152,7 @@
       // set options specifically for each swig generation
       this.compilationQueue.push({
         md: mdcontent,
-        level : level
+        structure : level
       });
     }
 
