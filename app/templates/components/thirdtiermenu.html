@@ -8,7 +8,13 @@
 {% set parenttitle = parentpath.split(sep).pop() %}
 
 {% macro renderMenu(menuStructure) %}
-	<li {% if toppath == menuStructure.path %} class="active"{% endif %}><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+	<li {% if toppath == menuStructure.path %} class="active"{% endif %}>
+		{% if menuStructure.children[0].children.length %}
+			<a href="/{{menuStructure.children[0].children[0].path}}/">{{menuStructure.name}}</a>
+		{% else %}
+			<a href="/{{menuStructure.children[0].path}}/">{{menuStructure.name}}</a>
+		{% endif %}
+	</li>
 {% endmacro %}
 
 {% macro renderSub(menuStructure) %}
@@ -18,10 +24,8 @@
 
 		{% if menuStructure.children.length %}
 				{% for child in menuStructure.children %}
-					{% if child.type == 'directory' %}
-						{% if child.parent == parentpath %}
-							{{ renderSub(child) }}
-						{% endif %}	
+					{% if child.parent == parentpath %}
+						{{ renderSub(child) }}
 					{% endif %}
 				{% endfor %}
 			
@@ -37,9 +41,8 @@
 			<div class="col-md-8">
 			  	<ul class="nav navbar-nav">
 					{% for menu in structure %}
-						{% if menu.type == 'directory' %}
-							{{ renderMenu(menu) }}
-						{% endif %}
+
+						{{ renderMenu(menu) }}
 					{% endfor %}
 				</ul>
 			</div>

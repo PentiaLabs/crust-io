@@ -23,7 +23,6 @@
  var slugify = require('slugify');
  var yaml = require('js-yaml');
  var _ = require('lodash');
- //var _d = require('lodash-deep');
 
 /**
  * McFly constructor.
@@ -65,6 +64,28 @@
 
     _.each(children, self._traverse.bind(self));
   }).then(function () {
+    var newStructure;
+
+    // remove all .yaml and .md files from the structure we're sending up to frontend
+    var filtering = function (data) {
+      return _.filter(data, function (obj) {
+        if (obj.type === 'directory') {
+          if (obj.children && obj.children.length) {
+            obj.children = filtering(obj.children);
+
+            if (obj.children.length === 0) {
+              delete obj['children'];
+            }
+          }
+
+          return obj;
+        }
+      });
+    }
+
+    newStructure = filtering(self.structure);
+    self.structure = newStructure;
+
     _.each(self.compilationQueue, function (pageData) {
       var config = yaml.safeLoad(pageData.config);
 

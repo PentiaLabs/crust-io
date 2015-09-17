@@ -1,5 +1,17 @@
 {% macro renderMenu(menuStructure) %}
-	<li {% if path == menuStructure.path %} class="active"{% endif %}><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+	<li {% if path == menuStructure.path %} class="active"{% endif %}>
+		{% if menuStructure.children[0].children.length %}
+			<a href="/{{menuStructure.children[0].children[0].path}}/">{{menuStructure.name}}</a>
+		{% else %}
+			<a href="/{{menuStructure.children[0].path}}/">{{menuStructure.name}}</a>
+		{% endif %}
+	</li>
+{% endmacro %}
+
+{% macro renderSubMenu(menuStructure) %}
+	<li {% if path == menuStructure.path %} class="active"{% endif %}>
+		<a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a>
+	</li>
 {% endmacro %}
 
 <nav class="navbar navbar-inverse">
@@ -11,9 +23,7 @@
 			<div class="col-md-8">
 			  	<ul class="nav navbar-nav">
 					{% for menu in structure %}
-						{% if menu.type == 'directory' %}
-							{{ renderMenu(menu) }}
-						{% endif %}
+						{{ renderMenu(menu) }}
 					{% endfor %}
 				</ul>
 			</div>
@@ -28,13 +38,11 @@
 					{% for menu in structure %}
 						{% if menu.name == path %}
 							{% if menu.children.length %}
-									{% for child in menu.children %}
-										{% if child.type == 'directory' %}
-											{% if child.parent == path %}
-												{{ renderMenu(child) }}
-											{% endif %}	
-										{% endif %}
-									{% endfor %}
+								{% for child in menu.children %}
+									{% if child.parent == path %}
+										{{ renderSubMenu(child) }}
+									{% endif %}
+								{% endfor %}
 							{% endif %}
 						{% endif %}
 					{% endfor %}
