@@ -1,4 +1,9 @@
-{% set parentpath = path.split('\\')[0] %}
+{% set sep = "\\" %}
+{% if path.split(sep).length %}
+	{% set sep = "/" %}
+{% endif %}
+
+{% set parentpath = path.split(sep)[0] %}
 
 {% macro renderMenu(menuStructure) %}
 	<li {% if parentpath == menuStructure.path %} class="active"{% endif %}{% if path == menuStructure.path %} class="active"{% endif %}><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>

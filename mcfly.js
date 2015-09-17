@@ -23,6 +23,7 @@
  var slugify = require('slugify');
  var yaml = require('js-yaml');
  var _ = require('lodash');
+ //var _d = require('lodash-deep');
 
 /**
  * McFly constructor.
@@ -74,7 +75,7 @@
       var nunjucksOpts = { 
           title : pageData.structure.name,
           path: pageData.structure.path,
-          slug: slugify(pageData.structure.path.replace('\\', '-').toLowerCase()),
+          slug: slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent: pageData.structure.parent,
           structure: self.structure[0].children,
           markdown: function markdown() { 

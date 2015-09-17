@@ -1,6 +1,11 @@
-{% set toppath = path.split('\\')[0] %}
-{% set parentpath = path.split('\\').slice(0, -1).join('\\') %}
-{% set parenttitle = parentpath.split('\\').pop() %}
+{% set sep = "\\" %}
+{% if path.split(sep).length %}
+	{% set sep = "/" %}
+{% endif %}
+
+{% set toppath = path.split(sep)[0] %}
+{% set parentpath = path.split(sep).slice(0, -1).join(sep) %}
+{% set parenttitle = parentpath.split(sep).pop() %}
 
 {% macro renderMenu(menuStructure) %}
 	<li {% if toppath == menuStructure.path %} class="active"{% endif %}><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>

@@ -52,7 +52,8 @@
     "marked": "0.3.3",
     "nunjucks": "2.0.0",
     "mkdirp": "0.5.1",
-    "slugify": "~0.1.1"
+    "slugify": "~0.1.1",
+    "lodash-deep": "1.6.0"
   },
   "dependencies": {
     "merge-stream": "^0.1.7"
