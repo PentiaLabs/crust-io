@@ -2,8 +2,12 @@
 
 {% block title %} {{ title }} {% endblock %}
 
+{% block menu %}
+	{% include '../components/topmenu.html' %}
+{% endblock %}
+
 {% block content %}
 
-{{ markdown() }}
+	{{ markdown() }}
 
 {% endblock %}

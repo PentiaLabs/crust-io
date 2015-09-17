@@ -15,12 +15,11 @@
 
  var dirToJson = require('dir-to-json');
  var fs = require('fs');
- var walkSync = require('walk-sync');
  var mkdirp = require('mkdirp');
  var marked = require('marked');
+ var nunjucks = require('nunjucks');
  var path = require('path');
  var Q = require('q');
- var swig = require('swig');
  var yaml = require('js-yaml');
  var _ = require('lodash');
 
@@ -35,7 +34,6 @@
   this.sourceFolder = '';
   this.templateFolder = '';
   this.structure = {};
-  this.menuStructure = [];
 }
 
 /**
@@ -51,6 +49,9 @@
  McFly.prototype.compile = function (dir, opts) {
   var self = this;
 
+  // we'll be shoving generated markdown directly into nunjucks templates - so we need this to be unescaped
+  nunjucks.configure({ autoescape: false });
+
   this.sourceFolder = opts.sourceFolder;
   this.templateFolder = opts.templateFolder;
 
@@ -63,14 +64,16 @@
     _.each(children, self._traverse.bind(self));
   }).then(function () {
     _.each(self.compilationQueue, function (pageData) {
-      var config = yaml.safeLoad(pageData.md);
+      var config = yaml.safeLoad(pageData.config);
 
       if (typeof config.template === 'undefined') {
         throw('Markdown files in source must contain a page type configuration.');
       }
 
-      var swigOpts = { 
+      var nunjucksOpts = { 
           title : pageData.structure.name,
+          path: pageData.structure.path,
+          parent: pageData.structure.parent,
           structure: self.structure[0].children,
           markdown: function markdown() { 
             return marked(pageData.md); 
@@ -79,7 +82,7 @@
       
       var template = path.join(self.templateFolder, config.template + '.html');
 
-      var compiled = swig.renderFile(template, swigOpts);
+      var compiled = nunjucks.render(template, nunjucksOpts);
 
       mkdirp.sync(path.join('.tmp', pageData.structure.path));
 
@@ -136,7 +139,9 @@
   children = level.children,
   type = level.type,
   mdpath,
-  mdcontent;
+  mdcontent,
+  configpath,
+  configuration;
 
   if (name === '..' || name === '') {
     return;
@@ -145,16 +150,26 @@
   if (type === 'directory' && children && children.length) {
 
     mdpath = path.join(__dirname, this.sourceFolder, level.path, 'content.md');
+    configpath = path.join(__dirname, this.sourceFolder, level.path, 'config.yaml');
 
     if (fs.existsSync(mdpath)) {
       mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');
-
-      // set options specifically for each swig generation
-      this.compilationQueue.push({
-        md: mdcontent,
-        structure : level
-      });
+    }else{
+      throw('No content found');
     }
+
+    if (fs.existsSync(configpath)) {
+      configuration = fs.readFileSync(configpath, 'utf8').replace(/\r\n|\r/g, '\n');
+    }else{
+      throw('No configuration found');
+    }
+
+    // set options specifically for each nunjucks generation
+    this.compilationQueue.push({
+      md: mdcontent,
+      config: configuration,
+      structure : level
+    });
 
     _.each(children, this._traverse.bind(this));
   }

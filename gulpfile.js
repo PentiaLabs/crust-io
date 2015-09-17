@@ -30,37 +30,10 @@ gulp.task('jshint', function () {
 gulp.task('mcfly', function () {
   var dir = path.join(__dirname, 'app/source');
 
-  // TODO: get streams from M, merge them, and return merged
   return M.compile(dir, { 
     sourceFolder : 'app/source',
     templateFolder : path.join(__dirname, '/app/templates/pages/')
   });
-
-});
-
-gulp.task('template', function () {
-  // var folders = getFolders('./app/data/');
-  var folders = [];
-  var defaultLang = '';
-
-  var tasks = folders.map(function(folder) {
-
-    var data = require('./app/data/' + folder + '/strings.json');
-    data.languages = folders;
-    data.currentLanguage = folder;
-    data.generatedTime = moment().format('MMM Do YY, HH:mm:ss');
-
-    console.log('Generating: ' + folder);
-    console.log('Data file loaded is:', data);
-
-    return gulp.src('./app/templates/pages/*.html')
-    .pipe($.data(data))
-    .pipe($.swig({ defaults: { cache: false } }))
-    .pipe(gulp.dest('.tmp/' + folder))
-      .pipe($.if(defaultLang === folder, gulp.dest('.tmp'))); // Put default lang in root
-    });
-
-  return merge(tasks);
 });
 
 gulp.task('html', ['styles'], function () {
@@ -114,11 +87,10 @@ gulp.task('connect', ['styles'], function () {
   var app = require('connect')()
   .use(require('connect-livereload')({port: 35729}))
   .use(serveStatic('.tmp'))
-  .use(serveStatic('app'))
     // paths to bower_components should be relative to the current file
     // e.g. in app/index.html you should use ../bower_components
     .use('/bower_components', serveStatic('bower_components'))
-    .use(serveIndex('app'));
+    .use(serveIndex('.tmp'));
 
     require('http').createServer(app)
     .listen(serverPort)
@@ -154,18 +126,15 @@ gulp.task('watch', ['connect'], function () {
   // watch for changes
   gulp.watch([
     'app/*.html',
-    '.tmp/styles/**/*.css',
-    '.tmp/**/*.html',
     'app/scripts/**/*.js',
-    'app/images/**/*'
     ]).on('change', $.livereload.changed);
 
   gulp.watch('app/styles/**/*.scss', ['styles']);
-  gulp.watch(['app/templates/**/*.html', 'app/data/**/*.json'], ['template']);
+  gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['mcfly']);
   gulp.watch('bower.json', ['wiredep']);
 });
 
-gulp.task('build', ['jshint', 'template', 'html', 'images', 'fonts', 'extras'], function () {
+gulp.task('build', ['jshint', 'mcfly', 'html', 'images', 'fonts', 'extras'], function () {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
