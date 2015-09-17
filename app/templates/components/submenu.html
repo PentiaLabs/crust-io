@@ -6,30 +6,41 @@
 
 <nav class="navbar navbar-inverse">
 	<div class="container">
-	  	<ul class="nav navbar-nav">
-			{% for menu in structure %}
-				{% if menu.type == 'directory' %}
-					{{ renderMenu(menu) }}
-				{% endif %}
-			{% endfor %}
-		</ul>
+		<div class="row">
+			<div class="col-md-2">
+				<a href="#" class="logo"></a>
+			</div>
+			<div class="col-md-8">
+			  	<ul class="nav navbar-nav">
+					{% for menu in structure %}
+						{% if menu.type == 'directory' %}
+							{{ renderMenu(menu) }}
+						{% endif %}
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
 	</div>
 </nav>
 
 <nav class="navbar navbar-default">
 	<div class="container">
-		<ul class="nav navbar-nav">
-			{% for menu in structure %}				
-				{% if menu.children.length %}
-					{% for child in menu.children %}
-						{% if child.type == 'directory' %}
-							{% if child.parent == parentpath %}
-								{{ renderMenu(child) }}
-							{% endif %}	
+		<div class="row">
+            <div class="col-md-8 col-md-offset-2">
+				<ul class="nav navbar-nav">
+					{% for menu in structure %}				
+						{% if menu.children.length %}
+							{% for child in menu.children %}
+								{% if child.type == 'directory' %}
+									{% if child.parent == parentpath %}
+										{{ renderMenu(child) }}
+									{% endif %}	
+								{% endif %}
+							{% endfor %}
 						{% endif %}
 					{% endfor %}
-				{% endif %}
-			{% endfor %}
-		</ul>
+				</ul>
+			</div>
+		</div>
 	 </div>
 </nav>

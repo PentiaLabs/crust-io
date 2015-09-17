@@ -20,6 +20,7 @@
  var nunjucks = require('nunjucks');
  var path = require('path');
  var Q = require('q');
+ var slugify = require('slugify');
  var yaml = require('js-yaml');
  var _ = require('lodash');
 
@@ -73,6 +74,7 @@
       var nunjucksOpts = { 
           title : pageData.structure.name,
           path: pageData.structure.path,
+          slug: slugify(pageData.structure.path.replace('\\', '-').toLowerCase()),
           parent: pageData.structure.parent,
           structure: self.structure[0].children,
           markdown: function markdown() { 

@@ -23,14 +23,18 @@
     <!-- endbuild -->
     {% endblock %}
 </head>
-<body>
+<body class="{{slug}}">
     <!--[if lt IE 10]>
       <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
     {% block menu %}{% endblock %}
 
     <div class="container">
-        {% block content %}{% endblock %}
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+            {% block content %}{% endblock %}
+            </div>
+        </div>
     </div>
 
     <!-- build:js /scripts/vendor.js -->
