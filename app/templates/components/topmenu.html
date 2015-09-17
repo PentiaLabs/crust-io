@@ -1,5 +1,5 @@
 {% macro renderMenu(menuStructure) %}
-	<li role="presentation"><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+	<li {% if path == menuStructure.path %} class="active"{% endif %}><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
 {% endmacro %}
 
 <nav class="navbar navbar-inverse">
@@ -13,7 +13,7 @@
 		</ul>
 	</div>
 </nav>
-<nav class="navbar">
+<nav class="navbar navbar-default">
 	<div class="container">
 		<ul class="nav navbar-nav">
 			{% for menu in structure %}

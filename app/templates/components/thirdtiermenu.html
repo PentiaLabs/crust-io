@@ -1,0 +1,53 @@
+{% set toppath = path.split('\\')[0] %}
+{% set parentpath = path.split('\\').slice(0, -1).join('\\') %}
+{% set parenttitle = parentpath.split('\\').pop() %}
+
+{% macro renderMenu(menuStructure) %}
+	<li {% if toppath == menuStructure.path %} class="active"{% endif %}><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+{% endmacro %}
+
+{% macro renderSub(menuStructure) %}
+		{% if menuStructure.parent == parentpath %}
+			<li><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+		{% endif %}
+
+		{% if menuStructure.children.length %}
+				{% for child in menuStructure.children %}
+					{% if child.type == 'directory' %}
+						{% if child.parent == parentpath %}
+							{{ renderSub(child) }}
+						{% endif %}	
+					{% endif %}
+				{% endfor %}
+			
+		{% endif %}
+{% endmacro %}
+
+<nav class="navbar navbar-inverse">
+	<div class="container">
+	  	<ul class="nav navbar-nav">
+			{% for menu in structure %}
+				{% if menu.type == 'directory' %}
+					{{ renderMenu(menu) }}
+				{% endif %}
+			{% endfor %}
+		</ul>
+	</div>
+</nav>
+
+<nav class="navbar navbar-default">
+	<div class="container">
+		<ul class="nav navbar-nav">
+			<li class="active"><a href="/{{parentpath}}/">{{parenttitle}}</a></li>
+			{% for menu in structure %}
+				{% if menu.children.length %}
+					{% for child in menu.children %}
+						{% if child.type == 'directory' %}
+							{{ renderSub(child) }}
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			{% endfor %}
+		</ul>
+	 </div>
+</nav>
