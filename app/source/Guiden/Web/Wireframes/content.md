@@ -8,7 +8,3 @@ Al design starter lorem ipsum dolor...
 ------
 
 ## Lorem ipsum
-
-
-
-(TODO KNAP: Download ikoner)

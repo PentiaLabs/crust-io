@@ -30,4 +30,12 @@ Som hovedregel bør web logotypen aldrig placeres på en baggrund som overstiger
 Respektafstande omkring logotypen skal overholdes, for at bevare et luftigt udtryk.
 Størrelsen og forholdet mellem segl og navnetræk er ikke tilfældig. De er adskilt, men alligevel tæt nok på hinanden til at udgøre en gruppering jvf. gestaltlov om tilhørsforhold. Web logotypen skal altid benyttes i ovenstående størrelse.
 
-(TODO KNAP: Download web logotype)
+<br>
+<br>
+<br>
+<br>
+<br>
+
+<div class="centered">
+	<a href="#" class="btn btn-download">Download web logotype</a>
+</div>

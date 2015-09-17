@@ -40,6 +40,12 @@ Hovedreglen er at ikonerne kun benyttes i relation til deres betydning.
 ## 4. Sub-ikoner
 
 
+<br>
+<br>
+<br>
+<br>
+<br>
 
-
-(TODO KNAP: Download ikoner)
+<div class="centered">
+	<a href="#" class="btn btn-download">Download ikoner</a>
+</div>

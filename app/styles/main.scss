@@ -26,6 +26,14 @@ body {
 		background-size: cover;
 
 		color: #ffF;
+
+		.btn-download {
+			color: #fff;
+
+			&:hover {
+				color: #fff;
+			}
+		}
 	}
 
 	&.baggrund-strategi {
@@ -37,6 +45,15 @@ body {
 		background-size: cover;
 
 		color: #fff;	
+
+		.btn-download {
+			border-color: #fac60a;
+			color: #fff;
+
+			&:hover {
+				color: #fff;
+			}
+		}
 	}
 }
 
@@ -147,15 +164,15 @@ hr {
 }
 
 .btn-download {
-	border: 2px solid #fac60a;
+	border: 2px solid #000;
 	border-radius: 0;
-	color: #fff;
+	color: #333;
 	font-size: 17px;
 	font-weight: 400;
 	padding: 25px;
 
 	&:hover {
-		color: #fff;
+		color: #333;
 	}
 }
 
