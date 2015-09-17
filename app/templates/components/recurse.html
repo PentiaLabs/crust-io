@@ -1,0 +1,28 @@
+{% macro renderMenu(menuStructure) %}
+	<ul class="nav navbar-nav">	
+		<li role="presentation"><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+		{% if menuStructure.name == path %}
+			{% if menuStructure.children.length %}
+				<li>
+					{% for child in menuStructure.children %}
+						{% if child.type == 'directory' %}
+							{% if child.parent == path %}
+								{{ renderMenu(child) }}
+							{% endif %}	
+						{% endif %}
+					{% endfor %}
+				</li>
+			{% endif %}
+		{% endif %}
+	</ul>
+{% endmacro %}
+
+<nav class="navbar navbar-inverse">
+      <div class="container">
+		{% for menu in structure %}
+			{% if menu.type == 'directory' %}
+				{{ renderMenu(menu) }}
+			{% endif %}
+		{% endfor %}
+	 </div>
+</nav>
