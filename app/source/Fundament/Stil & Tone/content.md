@@ -1,3 +1,3 @@
 # Stil og tone
 
-Fundament
+Mangler indhold til stil og tone.
