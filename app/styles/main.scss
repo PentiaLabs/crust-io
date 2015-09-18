@@ -4,7 +4,6 @@ $icon-font-path: '../bower_components/bootstrap-sass-official/assets/fonts/boots
 @import "../../bower_components/bootstrap-sass-official/assets/stylesheets/_bootstrap.scss";
 
 // # type
-@import url(https://fonts.googleapis.com/css?family=Roboto:400,300,700);
 
 * {
 	font-family: 'Roboto', sans-serif;
@@ -70,6 +69,15 @@ body {
 		top: 50%;
 		margin-top: 22.5px;
 	}	
+}
+
+.customer-title {
+	color: #929494;
+	font-size: 23px;
+	line-height: 16px;
+	font-weight: 100;
+	padding-top: 54px;
+	text-align: right;
 }
 
 .navbar {

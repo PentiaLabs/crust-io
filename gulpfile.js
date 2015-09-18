@@ -1,6 +1,7 @@
 /* jshint node:true */
 'use strict';
 
+var del = require('del');
 var gulp = require('gulp');
 var merge = require('merge-stream');
 var moment = require('moment');
@@ -27,7 +28,7 @@ gulp.task('jshint', function () {
   .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('mcfly', function () {
+gulp.task('mcfly', ['clean'], function () {
   var dir = path.join(__dirname, 'app/source');
 
   return M.compile(dir, { 
@@ -73,7 +74,8 @@ gulp.task('extras', function () {
   return gulp.src([
     'app/*.*',
     '!app/*.html',
-    'CNAME'
+    'CNAME',
+    '.htaccess'
     ], {
       dot: true
     }).pipe(gulp.dest('dist'));
@@ -81,7 +83,7 @@ gulp.task('extras', function () {
 
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
-gulp.task('connect', ['styles'], function () {
+gulp.task('connect', ['styles', 'mcfly'], function () {
   var serveStatic = require('serve-static');
   var serveIndex = require('serve-index');
   var app = require('connect')()
@@ -127,8 +129,9 @@ gulp.task('watch', ['connect'], function () {
   gulp.watch([
     'app/*.html',
     'app/scripts/**/*.js',
-    ]).on('change', $.livereload.changed);
+  ]).on('change', $.livereload.changed);
 
+  gulp.watch('app/images/**/*.*', ['images']);
   gulp.watch('app/styles/**/*.scss', ['styles']);
   gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['mcfly']);
   gulp.watch('bower.json', ['wiredep']);
@@ -140,6 +143,10 @@ gulp.task('build', ['jshint', 'mcfly', 'html', 'images', 'fonts', 'extras'], fun
 
 gulp.task('default', ['clean'], function () {
   gulp.start('build');
+});
+
+gulp.task('clean', function (cb) {
+  del('.tmp', cb);
 });
 
 gulp.task('deploy', ['build'], function () {

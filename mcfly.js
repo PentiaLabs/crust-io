@@ -66,7 +66,8 @@
   }).then(function () {
     var newStructure;
 
-    // remove all .yaml and .md files from the structure we're sending up to frontend
+    // remove all non-directory type files from the structure we're sending up to frontend
+    // that way we can easily spec out menus
     var filtering = function (data) {
       return _.filter(data, function (obj) {
         if (obj.type === 'directory') {
@@ -90,10 +91,11 @@
       var config = yaml.safeLoad(pageData.config);
 
       if (typeof config.template === 'undefined') {
-        throw('Markdown files in source must contain a page type configuration.');
+        throw('Config.yaml in source directories must contain a page type configuration.');
       }
 
       var nunjucksOpts = { 
+          currentLanguage: 'da',
           title : pageData.structure.name,
           path: pageData.structure.path,
           slug: slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
@@ -111,7 +113,6 @@
       mkdirp.sync(path.join('.tmp', pageData.structure.path));
 
       fs.writeFileSync(path.join('.tmp', pageData.structure.path, 'index.html'), compiled);
-
     });
 
   }).done();
