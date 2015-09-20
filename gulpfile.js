@@ -4,6 +4,7 @@
 var critical = require('critical').stream;
 var del = require('del');
 var gulp = require('gulp');
+var gutil = require('gutil');
 var glob = require('glob');
 var merge = require('merge-stream');
 var moment = require('moment');
@@ -118,7 +119,8 @@ gulp.task('extras', function () {
   return gulp.src([
     '!app/*.html',
     'CNAME',
-    '.htaccess'
+    '.htaccess',
+    'app/source/index.html'
     ], {
       dot: true
     }).pipe(gulp.dest('dist'));
@@ -165,7 +167,7 @@ gulp.task('wiredep', function () {
   .pipe(gulp.dest('app'));
 });
 
-gulp.task('watch', ['images','connect'], function () {
+gulp.task('watch', ['images','graphics','connect'], function () {
   $.livereload.listen();
 
   // watch for changes
@@ -189,7 +191,7 @@ gulp.task('default', ['clean'], function () {
   gulp.start('critical');
 });
 
-gulp.task('deploy', ['default'], function () {
+gulp.task('deploy', ['critical'], function () {
 	var ghpages = require('gh-pages');
 	var path = require('path');
 
