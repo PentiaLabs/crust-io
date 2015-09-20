@@ -73,8 +73,17 @@ gulp.task('html', ['styles'], function () {
   .pipe($.if('*.css', cssChannel()))
   .pipe(assets.restore())
   .pipe($.useref())
-  //.pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
+  .pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
   .pipe(gulp.dest('dist'));
+});
+
+gulp.task('graphics', function () {
+  return gulp.src('app/graphics/**/*')
+  .pipe($.cache($.imagemin({
+    progressive: true,
+    interlaced: true
+  })))
+  .pipe(gulp.dest('.tmp/graphics'));
 });
 
 gulp.task('images', function () {
@@ -93,7 +102,7 @@ gulp.task('fonts', function () {
   .pipe(gulp.dest('dist/fonts'));
 });
 
-gulp.task('extras', function () {
+gulp.task('extras', ['images', 'graphics'], function () {
   return gulp.src([
     'app/*.*',
     '!app/*.html',
@@ -160,7 +169,7 @@ gulp.task('watch', ['images','connect'], function () {
   gulp.watch('bower.json', ['wiredep']);
 });
 
-gulp.task('build', ['jshint', 'mcfly', 'html', 'images', 'fonts', 'extras'], function () {
+gulp.task('build', ['jshint', 'mcfly', 'html', 'fonts', 'extras'], function () {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
