@@ -28,6 +28,9 @@ gulp.task('styles', function () {
 gulp.task('critical', ['build'], function () {
   var streams = [];
 
+  // we're doing inline critical css for a lot of html files, so to prevent a warning about memory leaks, we'll set max listeners a little higher than normal
+  process.setMaxListeners(100);
+
   glob('dist/**/*.html', {}, function (er, files) {
     _.each(files, function(filepath, i) {
       var targetpath = path.dirname(filepath);
@@ -102,9 +105,17 @@ gulp.task('fonts', function () {
   .pipe(gulp.dest('dist/fonts'));
 });
 
-gulp.task('extras', ['images', 'graphics'], function () {
+gulp.task('copy', ['images', 'graphics'], function () {
   return gulp.src([
-    'app/*.*',
+    'app/images/*',
+    'app/graphics/*'
+    ], {
+      base: 'app'
+    }).pipe(gulp.dest('dist'));
+});
+
+gulp.task('extras', function () {
+  return gulp.src([
     '!app/*.html',
     'CNAME',
     '.htaccess'
@@ -164,20 +175,21 @@ gulp.task('watch', ['images','connect'], function () {
   ]).on('change', $.livereload.changed);
 
   gulp.watch('app/images/**/*.*', ['images']);
+  gulp.watch('app/graphics/**/*.*', ['graphics']);
   gulp.watch('app/styles/**/*.scss', ['styles']);
   gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['mcfly']);
   gulp.watch('bower.json', ['wiredep']);
 });
 
-gulp.task('build', ['jshint', 'mcfly', 'html', 'fonts', 'extras'], function () {
+gulp.task('build', ['jshint', 'mcfly', 'html', 'fonts', 'copy', 'extras'], function () {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
 gulp.task('default', ['clean'], function () {
-  gulp.start('build');
+  gulp.start('critical');
 });
 
-gulp.task('deploy', ['build'], function () {
+gulp.task('deploy', ['default'], function () {
 	var ghpages = require('gh-pages');
 	var path = require('path');
 
