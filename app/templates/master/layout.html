@@ -6,14 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
     <title>{% block title %}{% endblock %} | Pentia</title>
     {% block head %}
-    <!-- above the fold critical css -->
-    <style>.col-md-2,.col-md-8,.container{padding-left:15px;padding-right:15px}.nav>li,.nav>li>a,nav{display:block}.logo,.nav>li,.nav>li>a,.navbar,h1{position:relative}*,h1{font-family:Roboto,sans-serif}html{font-family:sans-serif;font-size:10px;-webkit-tap-highlight-color:transparent}body{margin:0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.42857;color:#333;background-color:#fff}a{background-color:transparent;color:#337ab7;text-decoration:none}h1{margin:.67em 0;line-height:1.1;color:inherit}*{box-sizing:border-box}p{margin:0 0 10px}ul{margin-top:0;margin-bottom:10px}.container{margin-right:auto;margin-left:auto}@media (min-width:768px){.container{width:750px}}@media (min-width:992px){.container{width:970px}}@media (min-width:1200px){.container{width:1170px}}.row{margin-left:-15px;margin-right:-15px}.col-md-2,.col-md-8{position:relative;min-height:1px}@media (min-width:992px){.col-md-2,.col-md-8{float:left}.col-md-2{width:16.6667%}.col-md-8{width:66.6667%}.col-md-offset-2{margin-left:16.6667%}}.nav{margin-bottom:0;padding-left:0;list-style:none}.nav>li>a{padding:10px 15px}.navbar{min-height:50px;border:1px solid transparent}.navbar-nav{margin:7.5px -15px}.navbar-nav>li>a{padding-top:10px;padding-bottom:10px;line-height:20px}@media (min-width:768px){.navbar{border-radius:4px}.navbar-nav{float:left;margin:0}.navbar-nav>li{float:left}.navbar-nav>li>a{padding-top:15px;padding-bottom:15px}}.navbar-default{border-color:#e7e7e7;background-color:#f8f8f8}.navbar-default .navbar-nav>li>a{color:#777}.navbar-default .navbar-nav>.active>a{color:#555;background-color:#e7e7e7}.navbar-inverse{border-color:#090909;background-color:#3b3b3b;min-height: 120px;}.navbar-inverse .navbar-nav>li>a{color:#9d9d9d}.navbar-inverse .navbar-nav>.active>a{color:#fff;background-color:#090909}body{padding-bottom:100px}body.baggrund-om-folketinget{color:#fff;background:url(http://ftdesign.frisch.io/images/background-about.jpg) 50% 0/cover no-repeat fixed #3d3d3d}.customer-title,.navbar.navbar-inverse .navbar-nav li{font-weight:100;color:#929494;font-size:23px;padding-top:54px}.customer-title{line-height:16px;text-align:right}.navbar{border-radius:0;margin-bottom:0}.navbar.navbar-inverse{background-color:#3d3d3d}.navbar.navbar-inverse .navbar-nav li{padding-bottom:44px}.navbar.navbar-inverse .navbar-nav li a{font-weight:100;padding:0 50px 0 0}.navbar.navbar-inverse .navbar-nav li.active a{background-color:transparent}.navbar.navbar-default{background-color:#fff}.navbar.navbar-default li{padding:21px 0}.navbar.navbar-default li a{color:#3d3d3d;font-weight:100;font-size:19px;padding:0 38px 0 0;background-color:transparent}.navbar.navbar-default li.active a{font-weight:400;background-color:transparent}h1{font-size:30px;font-weight:700;margin-top:112px;margin-bottom:27px}p{font-size:16px;font-weight:100}
     
-      body { opacity: 0; }
-      .wf-active body { opacity: 1; }
-    </style>
+    <!-- build:css /styles/maincss-3.css -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <!-- endbuild -->
+
     {% endblock %}
 </head>
+
 <body class="{{slug}}">
     {% block menu %}{% endblock %}
 
@@ -25,6 +25,7 @@
         </div>
     </div>
 
+    <!-- Async load webfonts for performance gains - mostly interesting for production -->
     <script type="text/javascript">
       WebFontConfig = {
         google: { families: [ 'Roboto:400,300,700:latin' ] }
@@ -38,15 +39,6 @@
         var s = document.getElementsByTagName('script')[0];
         s.parentNode.insertBefore(wf, s);
       })();
-      var cb = function() {
-        var l = document.createElement('link'); l.rel = 'stylesheet';
-        l.href = '/styles/main.css';
-        var h = document.getElementsByTagName('head')[0]; h.parentNode.insertBefore(l, h);
-      };
-      var raf = requestAnimationFrame || mozRequestAnimationFrame ||
-          webkitRequestAnimationFrame || msRequestAnimationFrame;
-      if (raf) raf(cb);
-      else window.addEventListener('load', cb);
       </script>
 </body>
 </html>

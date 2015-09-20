@@ -1,14 +1,17 @@
 /* jshint node:true */
 'use strict';
 
+var critical = require('critical').stream;
 var del = require('del');
 var gulp = require('gulp');
+var glob = require('glob');
 var merge = require('merge-stream');
 var moment = require('moment');
 var path = require('path');
 var serverPort = 9000;
 var $ = require('gulp-load-plugins')();
 var M = require('./mcfly'); // TODO: publish to npm when it's done
+var _ = require('lodash');
 
 gulp.task('styles', function () {
   return gulp.src('app/styles/main.scss')
@@ -21,6 +24,26 @@ gulp.task('styles', function () {
   .pipe(gulp.dest('.tmp/styles'));
 });
 
+// Generate & Inline Critical-path CSS 
+gulp.task('critical', ['build'], function () {
+  var streams = [];
+
+  glob('dist/**/*.html', {}, function (er, files) {
+    _.each(files, function(filepath, i) {
+      var targetpath = path.dirname(filepath);
+
+      streams.push(
+        gulp.src(filepath)
+        .pipe(critical({base: targetpath, inline: true, css: ['dist/styles/maincss-3.css'] }))
+        .pipe(gulp.dest(targetpath))
+      );
+
+    });
+
+    return merge.apply(this, streams);
+  });
+});
+
 gulp.task('jshint', function () {
   return gulp.src('app/scripts/**/*.js')
   .pipe($.jshint())
@@ -28,7 +51,7 @@ gulp.task('jshint', function () {
   .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('mcfly', ['clean'], function () {
+gulp.task('mcfly', function () {
   var dir = path.join(__dirname, 'app/source');
 
   return M.compile(dir, { 
@@ -50,7 +73,7 @@ gulp.task('html', ['styles'], function () {
   .pipe($.if('*.css', cssChannel()))
   .pipe(assets.restore())
   .pipe($.useref())
-  .pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
+  //.pipe($.if('*.html', $.minifyHtml({conditionals: true, loose: true})))
   .pipe(gulp.dest('dist'));
 });
 
@@ -122,7 +145,7 @@ gulp.task('wiredep', function () {
   .pipe(gulp.dest('app'));
 });
 
-gulp.task('watch', ['connect'], function () {
+gulp.task('watch', ['images','connect'], function () {
   $.livereload.listen();
 
   // watch for changes
@@ -143,10 +166,6 @@ gulp.task('build', ['jshint', 'mcfly', 'html', 'images', 'fonts', 'extras'], fun
 
 gulp.task('default', ['clean'], function () {
   gulp.start('build');
-});
-
-gulp.task('clean', function (cb) {
-  del('.tmp', cb);
 });
 
 gulp.task('deploy', ['build'], function () {
