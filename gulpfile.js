@@ -14,18 +14,40 @@ var $ = require('gulp-load-plugins')();
 var M = require('./mcfly'); // TODO: publish to npm when it's done
 var _ = require('lodash');
 
-gulp.task('styles', function () {
-  return gulp.src('app/styles/main.scss')
-  .pipe($.plumber())
-  .pipe($.sass({
-    style: 'expanded',
-    precision: 10
-  }))
-  .pipe($.autoprefixer({browsers: ['last 1 version']}))
-  .pipe(gulp.dest('.tmp/styles'));
+gulp.task('build', ['jshint', 'mcfly', 'html', 'fonts', 'copy', 'extras'], function () {
+  return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
-// Generate & Inline Critical-path CSS 
+gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
+
+gulp.task('connect', ['styles', 'mcfly'], function () {
+  var serveStatic = require('serve-static');
+  var serveIndex = require('serve-index');
+  var app = require('connect')()
+    .use(require('connect-livereload')({port: 35729}))
+    .use(serveStatic('.tmp'))
+  
+  // paths to bower_components should be relative to the current file
+  // e.g. in app/index.html you should use ../bower_components
+    .use('/bower_components', serveStatic('bower_components'))
+    .use(serveIndex('.tmp'));
+
+  require('http').createServer(app)
+    .listen(serverPort)
+    .on('listening', function () {
+      console.log('Started connect web server on http://localhost:' + serverPort);
+  });
+});
+
+gulp.task('copy', ['images', 'graphics'], function () {
+  return gulp.src([
+    'app/images/*',
+    'app/graphics/*'
+    ], {
+      base: 'app'
+    }).pipe(gulp.dest('dist'));
+});
+
 gulp.task('critical', ['build'], function () {
   var streams = [];
 
@@ -40,7 +62,7 @@ gulp.task('critical', ['build'], function () {
         gulp.src(filepath)
         .pipe(critical({base: targetpath, inline: true, css: ['dist/styles/maincss-3.css'] }))
         .pipe(gulp.dest(targetpath))
-      );
+        );
 
     });
 
@@ -48,20 +70,53 @@ gulp.task('critical', ['build'], function () {
   });
 });
 
-gulp.task('jshint', function () {
-  return gulp.src('app/scripts/**/*.js')
-  .pipe($.jshint())
-  .pipe($.jshint.reporter('jshint-stylish'))
-  .pipe($.jshint.reporter('fail'));
+gulp.task('default', ['clean'], function () {
+  gulp.start('critical');
 });
 
-gulp.task('mcfly', function () {
-  var dir = path.join(__dirname, 'app/source');
+gulp.task('deploy', ['critical'], function () {
+  var ghpages = require('gh-pages');
+  var path = require('path');
 
-  return M.compile(dir, { 
-    sourceFolder : 'app/source',
-    templateFolder : path.join(__dirname, '/app/templates/pages/')
+  ghpages.publish(path.join(__dirname, 'dist'), function(err) {
+    console.error(err);
   });
+});
+
+gulp.task('deploy-no-build', function () {
+  var ghpages = require('gh-pages');
+  var path = require('path');
+
+  ghpages.publish(path.join(__dirname, 'dist'), function(err) {
+    console.error(err);
+  });
+});
+
+gulp.task('extras', function () {
+  return gulp.src([
+    '!app/*.html',
+    'CNAME',
+    '.htaccess',
+    'app/source/index.html'
+    ], {
+      dot: true
+    }).pipe(gulp.dest('dist'));
+});
+
+gulp.task('fonts', function () {
+  return gulp.src(require('main-bower-files')().concat('app/fonts/**/*'))
+  .pipe($.filter('**/*.{eot,svg,ttf,woff,woff2}'))
+  .pipe($.flatten())
+  .pipe(gulp.dest('dist/fonts'));
+});
+
+gulp.task('graphics', function () {
+  return gulp.src('app/graphics/**/*')
+  .pipe($.cache($.imagemin({
+    progressive: true,
+    interlaced: true
+  })))
+  .pipe(gulp.dest('.tmp/graphics'));
 });
 
 gulp.task('html', ['styles'], function () {
@@ -81,15 +136,6 @@ gulp.task('html', ['styles'], function () {
   .pipe(gulp.dest('dist'));
 });
 
-gulp.task('graphics', function () {
-  return gulp.src('app/graphics/**/*')
-  .pipe($.cache($.imagemin({
-    progressive: true,
-    interlaced: true
-  })))
-  .pipe(gulp.dest('.tmp/graphics'));
-});
-
 gulp.task('images', function () {
   return gulp.src('app/images/**/*')
   .pipe($.cache($.imagemin({
@@ -99,58 +145,53 @@ gulp.task('images', function () {
   .pipe(gulp.dest('.tmp/images'));
 });
 
-gulp.task('fonts', function () {
-  return gulp.src(require('main-bower-files')().concat('app/fonts/**/*'))
-  .pipe($.filter('**/*.{eot,svg,ttf,woff,woff2}'))
-  .pipe($.flatten())
-  .pipe(gulp.dest('dist/fonts'));
+gulp.task('jshint', function () {
+  return gulp.src('app/scripts/**/*.js')
+  .pipe($.jshint())
+  .pipe($.jshint.reporter('jshint-stylish'))
+  .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('copy', ['images', 'graphics'], function () {
-  return gulp.src([
-    'app/images/*',
-    'app/graphics/*'
-    ], {
-      base: 'app'
-    }).pipe(gulp.dest('dist'));
-});
+gulp.task('mcfly', function () {
+  var dir = path.join(__dirname, 'app/source');
 
-gulp.task('extras', function () {
-  return gulp.src([
-    '!app/*.html',
-    'CNAME',
-    '.htaccess',
-    'app/source/index.html'
-    ], {
-      dot: true
-    }).pipe(gulp.dest('dist'));
-});
-
-gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
-
-gulp.task('connect', ['styles', 'mcfly'], function () {
-  var serveStatic = require('serve-static');
-  var serveIndex = require('serve-index');
-  var app = require('connect')()
-  .use(require('connect-livereload')({port: 35729}))
-  .use(serveStatic('.tmp'))
-    // paths to bower_components should be relative to the current file
-    // e.g. in app/index.html you should use ../bower_components
-    .use('/bower_components', serveStatic('bower_components'))
-    .use(serveIndex('.tmp'));
-
-    require('http').createServer(app)
-    .listen(serverPort)
-    .on('listening', function () {
-      console.log('Started connect web server on http://localhost:' + serverPort);
-    });
+  return M.compile(dir, { 
+    sourceFolder : 'app/source',
+    templateFolder : path.join(__dirname, '/app/templates/pages/')
   });
+});
 
 gulp.task('serve', ['connect', 'watch'], function () {
   require('opn')('http://localhost:' + serverPort);
 });
 
-// inject bower components
+gulp.task('styles', function () {
+  return gulp.src('app/styles/main.scss')
+  .pipe($.plumber())
+  .pipe($.sass({
+    style: 'expanded',
+    precision: 10
+  }))
+  .pipe($.autoprefixer({browsers: ['last 1 version']}))
+  .pipe(gulp.dest('.tmp/styles'));
+});
+
+gulp.task('watch', ['images','graphics','connect'], function () {
+  $.livereload.listen();
+
+  // watch for changes
+  gulp.watch([
+    'app/*.html',
+    'app/scripts/**/*.js',
+    ]).on('change', $.livereload.changed);
+
+  gulp.watch('app/images/**/*.*', ['images']);
+  gulp.watch('app/graphics/**/*.*', ['graphics']);
+  gulp.watch('app/styles/**/*.scss', ['styles']);
+  gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['mcfly']);
+  gulp.watch('bower.json', ['wiredep']);
+});
+
 gulp.task('wiredep', function () {
   var wiredep = require('wiredep').stream;
 
@@ -165,46 +206,4 @@ gulp.task('wiredep', function () {
   gulp.src('app/templates/**/*.html')
   .pipe(wiredep({exclude: ['bootstrap-sass-official']}))
   .pipe(gulp.dest('app'));
-});
-
-gulp.task('watch', ['images','graphics','connect'], function () {
-  $.livereload.listen();
-
-  // watch for changes
-  gulp.watch([
-    'app/*.html',
-    'app/scripts/**/*.js',
-  ]).on('change', $.livereload.changed);
-
-  gulp.watch('app/images/**/*.*', ['images']);
-  gulp.watch('app/graphics/**/*.*', ['graphics']);
-  gulp.watch('app/styles/**/*.scss', ['styles']);
-  gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['mcfly']);
-  gulp.watch('bower.json', ['wiredep']);
-});
-
-gulp.task('build', ['jshint', 'mcfly', 'html', 'fonts', 'copy', 'extras'], function () {
-  return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
-});
-
-gulp.task('default', ['clean'], function () {
-  gulp.start('critical');
-});
-
-gulp.task('deploy', ['critical'], function () {
-	var ghpages = require('gh-pages');
-	var path = require('path');
-
-	ghpages.publish(path.join(__dirname, 'dist'), function(err) {
-		console.error(err);
-	});
-});
-
-gulp.task('deploy-no-build', function () {
-	var ghpages = require('gh-pages');
-	var path = require('path');
-
-	ghpages.publish(path.join(__dirname, 'dist'), function(err) {
-		console.error(err);
-	});
 });
