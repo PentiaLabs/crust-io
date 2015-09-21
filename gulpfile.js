@@ -1,13 +1,18 @@
 /* jshint node:true */
 'use strict';
 
+var critical = require('critical').stream;
+var del = require('del');
 var gulp = require('gulp');
+var gutil = require('gutil');
+var glob = require('glob');
 var merge = require('merge-stream');
 var moment = require('moment');
 var path = require('path');
 var serverPort = 9000;
 var $ = require('gulp-load-plugins')();
 var M = require('./mcfly'); // TODO: publish to npm when it's done
+var _ = require('lodash');
 
 gulp.task('styles', function () {
   return gulp.src('app/styles/main.scss')
@@ -18,6 +23,29 @@ gulp.task('styles', function () {
   }))
   .pipe($.autoprefixer({browsers: ['last 1 version']}))
   .pipe(gulp.dest('.tmp/styles'));
+});
+
+// Generate & Inline Critical-path CSS 
+gulp.task('critical', ['build'], function () {
+  var streams = [];
+
+  // we're doing inline critical css for a lot of html files, so to prevent a warning about memory leaks, we'll set max listeners a little higher than normal
+  process.setMaxListeners(100);
+
+  glob('dist/**/*.html', {}, function (er, files) {
+    _.each(files, function(filepath, i) {
+      var targetpath = path.dirname(filepath);
+
+      streams.push(
+        gulp.src(filepath)
+        .pipe(critical({base: targetpath, inline: true, css: ['dist/styles/maincss-3.css'] }))
+        .pipe(gulp.dest(targetpath))
+      );
+
+    });
+
+    return merge.apply(this, streams);
+  });
 });
 
 gulp.task('jshint', function () {
@@ -53,6 +81,15 @@ gulp.task('html', ['styles'], function () {
   .pipe(gulp.dest('dist'));
 });
 
+gulp.task('graphics', function () {
+  return gulp.src('app/graphics/**/*')
+  .pipe($.cache($.imagemin({
+    progressive: true,
+    interlaced: true
+  })))
+  .pipe(gulp.dest('.tmp/graphics'));
+});
+
 gulp.task('images', function () {
   return gulp.src('app/images/**/*')
   .pipe($.cache($.imagemin({
@@ -69,11 +106,21 @@ gulp.task('fonts', function () {
   .pipe(gulp.dest('dist/fonts'));
 });
 
+gulp.task('copy', ['images', 'graphics'], function () {
+  return gulp.src([
+    'app/images/*',
+    'app/graphics/*'
+    ], {
+      base: 'app'
+    }).pipe(gulp.dest('dist'));
+});
+
 gulp.task('extras', function () {
   return gulp.src([
-    'app/*.*',
     '!app/*.html',
-    'CNAME'
+    'CNAME',
+    '.htaccess',
+    'app/source/index.html'
     ], {
       dot: true
     }).pipe(gulp.dest('dist'));
@@ -81,7 +128,7 @@ gulp.task('extras', function () {
 
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
-gulp.task('connect', ['styles'], function () {
+gulp.task('connect', ['styles', 'mcfly'], function () {
   var serveStatic = require('serve-static');
   var serveIndex = require('serve-index');
   var app = require('connect')()
@@ -120,29 +167,31 @@ gulp.task('wiredep', function () {
   .pipe(gulp.dest('app'));
 });
 
-gulp.task('watch', ['connect'], function () {
+gulp.task('watch', ['images','graphics','connect'], function () {
   $.livereload.listen();
 
   // watch for changes
   gulp.watch([
     'app/*.html',
     'app/scripts/**/*.js',
-    ]).on('change', $.livereload.changed);
+  ]).on('change', $.livereload.changed);
 
+  gulp.watch('app/images/**/*.*', ['images']);
+  gulp.watch('app/graphics/**/*.*', ['graphics']);
   gulp.watch('app/styles/**/*.scss', ['styles']);
   gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['mcfly']);
   gulp.watch('bower.json', ['wiredep']);
 });
 
-gulp.task('build', ['jshint', 'mcfly', 'html', 'images', 'fonts', 'extras'], function () {
+gulp.task('build', ['jshint', 'mcfly', 'html', 'fonts', 'copy', 'extras'], function () {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
 gulp.task('default', ['clean'], function () {
-  gulp.start('build');
+  gulp.start('critical');
 });
 
-gulp.task('deploy', ['build'], function () {
+gulp.task('deploy', ['critical'], function () {
 	var ghpages = require('gh-pages');
 	var path = require('path');
 

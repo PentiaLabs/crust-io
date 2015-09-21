@@ -7,6 +7,7 @@
     "apache-server-configs": "^2.7.1",
     "connect": "^3.0.1",
     "connect-livereload": "^0.5.0",
+    "critical": "0.6.0",
     "del": "^0.1.0",
     "dir-to-json": "0.0.3",
     "gh-pages": "^0.2.0",
@@ -17,6 +18,7 @@
     "gulp-data": "^1.2.0",
     "gulp-filter": "^1.0.2",
     "gulp-flatten": "^0.0.4",
+    "gulp-ftp": "~1.0.4",
     "gulp-if": "^1.2.5",
     "gulp-imagemin": "^1.2.1",
     "gulp-jshint": "^1.5.3",
@@ -34,7 +36,9 @@
     "gulp-size": "^1.1.0",
     "gulp-swig": "^0.7.4",
     "gulp-uglify": "^1.0.1",
+    "gulp-uncss": "1.0.3",
     "gulp-useref": "^1.0.2",
+    "gutil": "~1.6.4",
     "jshint-stylish": "^1.0.0",
     "js-yaml": "3.4.0",
     "lazypipe": "^0.2.1",
@@ -52,7 +56,8 @@
     "marked": "0.3.3",
     "nunjucks": "2.0.0",
     "mkdirp": "0.5.1",
-    "slugify": "~0.1.1"
+    "slugify": "~0.1.1",
+    "lodash-deep": "1.6.0"
   },
   "dependencies": {
     "merge-stream": "^0.1.7"

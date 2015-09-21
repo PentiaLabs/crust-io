@@ -64,17 +64,41 @@
 
     _.each(children, self._traverse.bind(self));
   }).then(function () {
+    var newStructure;
+
+    // remove all non-directory type files from the structure we're sending up to frontend
+    // that way we can easily spec out menus
+    var filtering = function (data) {
+      return _.filter(data, function (obj) {
+        if (obj.type === 'directory') {
+          if (obj.children && obj.children.length) {
+            obj.children = filtering(obj.children);
+
+            if (obj.children.length === 0) {
+              delete obj['children'];
+            }
+          }
+
+          return obj;
+        }
+      });
+    }
+
+    newStructure = filtering(self.structure);
+    self.structure = newStructure;
+
     _.each(self.compilationQueue, function (pageData) {
       var config = yaml.safeLoad(pageData.config);
 
       if (typeof config.template === 'undefined') {
-        throw('Markdown files in source must contain a page type configuration.');
+        throw('Config.yaml in source directories must contain a page type configuration.');
       }
 
       var nunjucksOpts = { 
+          currentLanguage: 'da',
           title : pageData.structure.name,
           path: pageData.structure.path,
-          slug: slugify(pageData.structure.path.replace('\\', '-').toLowerCase()),
+          slug: slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent: pageData.structure.parent,
           structure: self.structure[0].children,
           markdown: function markdown() { 
@@ -89,7 +113,6 @@
       mkdirp.sync(path.join('.tmp', pageData.structure.path));
 
       fs.writeFileSync(path.join('.tmp', pageData.structure.path, 'index.html'), compiled);
-
     });
 
   }).done();
