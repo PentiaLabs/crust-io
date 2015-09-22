@@ -1,4 +1,4 @@
-# McFly
+# Crust
 
 Static site generator with support for hiearichal page structure. View the last deployed version here (insert CNAME)
 

@@ -2,7 +2,7 @@
 'use strict';
 
 /*!
- * Pentia McFly
+ * Pentia - crust-io
  *
  * Static site generator with support for hiearichal page structure
  *
@@ -25,12 +25,12 @@
  var _ = require('lodash');
 
 /**
- * McFly constructor.
+ * Crust constructor.
  *
  * @api public
  */
 
- function McFly () {
+ function Crust () {
   this.compilationQueue = [];
   this.sourceFolder = '';
   this.templateFolder = '';
@@ -38,7 +38,7 @@
 }
 
 /**
- * Do complete compilation of McFly structure
+ * Do complete compilation of Crust structure
  *
  * @param {String} path to parent dir of file structure to generate from
  * @param {Object} options
@@ -47,7 +47,7 @@
  * @api public
  */
 
- McFly.prototype.compile = function (dir, opts) {
+ Crust.prototype.compile = function (dir, opts) {
   var self = this;
 
   // we'll be shoving generated markdown directly into nunjucks templates - so we need this to be unescaped
@@ -127,7 +127,7 @@
  * @api private
  */
 
- McFly.prototype._dirTree = function (filename) {
+ Crust.prototype._dirTree = function (filename) {
    var folders = Q.defer();
 
    dirToJson(filename, function( err, dirTree ){
@@ -148,7 +148,7 @@
  * @api private
  */
 
- McFly.prototype._readLevel = function (filepath) {
+ Crust.prototype._readLevel = function (filepath) {
     return (filepath.split('\\').length - 1); // TODO: make sure that slash is right according to file system
   };
 
@@ -159,7 +159,7 @@
  * @api private
  */
 
- McFly.prototype._traverse = function (level) {
+ Crust.prototype._traverse = function (level) {
   var name = level.name,
   children = level.children,
   type = level.type,
@@ -204,5 +204,5 @@
  * Export the instance.
  */
 
- var inst = new McFly();
+ var inst = new Crust();
  exports = module.exports = inst;

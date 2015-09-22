@@ -11,16 +11,16 @@ var moment = require('moment');
 var path = require('path');
 var serverPort = 9000;
 var $ = require('gulp-load-plugins')();
-var M = require('./mcfly'); // TODO: publish to npm when it's done
+var crust = require('./index');
 var _ = require('lodash');
 
-gulp.task('build', ['jshint', 'mcfly', 'html', 'fonts', 'copy', 'extras'], function () {
+gulp.task('build', ['jshint', 'crust', 'html', 'fonts', 'copy', 'extras'], function () {
   return gulp.src('dist/**/*').pipe($.size({title: 'build', gzip: true}));
 });
 
 gulp.task('clean', require('del').bind(null, ['.tmp', 'dist']));
 
-gulp.task('connect', ['styles', 'mcfly'], function () {
+gulp.task('connect', ['styles', 'crust'], function () {
   var serveStatic = require('serve-static');
   var serveIndex = require('serve-index');
   var app = require('connect')()
@@ -67,6 +67,15 @@ gulp.task('critical', ['build'], function () {
     });
 
     return merge.apply(this, streams);
+  });
+});
+
+gulp.task('crust', function () {
+  var dir = path.join(__dirname, 'app/source');
+
+  return crust.compile(dir, { 
+    sourceFolder : 'app/source',
+    templateFolder : path.join(__dirname, '/app/templates/pages/')
   });
 });
 
@@ -152,15 +161,6 @@ gulp.task('jshint', function () {
   .pipe($.jshint.reporter('fail'));
 });
 
-gulp.task('mcfly', function () {
-  var dir = path.join(__dirname, 'app/source');
-
-  return M.compile(dir, { 
-    sourceFolder : 'app/source',
-    templateFolder : path.join(__dirname, '/app/templates/pages/')
-  });
-});
-
 gulp.task('serve', ['connect', 'watch'], function () {
   require('opn')('http://localhost:' + serverPort);
 });
@@ -188,7 +188,7 @@ gulp.task('watch', ['images','graphics','connect'], function () {
   gulp.watch('app/images/**/*.*', ['images']);
   gulp.watch('app/graphics/**/*.*', ['graphics']);
   gulp.watch('app/styles/**/*.scss', ['styles']);
-  gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['mcfly']);
+  gulp.watch(['app/templates/**/*.html', 'app/source/**/*.md', 'app/source/**/*.yaml'], ['crust']);
   gulp.watch('bower.json', ['wiredep']);
 });
 
