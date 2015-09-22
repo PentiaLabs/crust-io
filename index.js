@@ -14,6 +14,7 @@
  */
 
  var dirToJson = require('dir-to-json');
+ var findup = require('findup-sync');
  var fs = require('fs');
  var mkdirp = require('mkdirp');
  var marked = require('marked');
@@ -23,6 +24,7 @@
  var slugify = require('slugify');
  var yaml = require('js-yaml');
  var _ = require('lodash');
+ var cwd = process.cwd();
 
 /**
  * Crust constructor.
@@ -35,6 +37,7 @@
   this.sourceFolder = '';
   this.templateFolder = '';
   this.structure = {};
+  this.workingdir;
 }
 
 /**
@@ -49,12 +52,26 @@
 
  Crust.prototype.compile = function (dir, opts) {
   var self = this;
+  var workingdir;
 
   // we'll be shoving generated markdown directly into nunjucks templates - so we need this to be unescaped
   nunjucks.configure({ autoescape: false });
 
   this.sourceFolder = opts.sourceFolder;
   this.templateFolder = opts.templateFolder;
+
+  workingdir = findup(this.sourceFolder, { cwd: process.cwd() });
+
+  if (workingdir) {
+    // so we found the source folder - let's find the dir that it resides in
+    cwd = workingdir.split(this.sourceFolder)[0];
+
+    // and change our current working directory to that one, because that's where we'll be working from.
+    process.chdir(cwd);
+  } else {
+    // we don't want to play anymore
+    throw('Source folder not found');
+  }
 
   this._dirTree(dir).then(function (structure) {
     var children = structure.children;
@@ -174,8 +191,8 @@
 
   if (type === 'directory' && children && children.length) {
 
-    mdpath = path.join(__dirname, this.sourceFolder, level.path, 'content.md');
-    configpath = path.join(__dirname, this.sourceFolder, level.path, 'config.yaml');
+    mdpath = path.join(cwd, this.sourceFolder, level.path, 'content.md');
+    configpath = path.join(cwd, this.sourceFolder, level.path, 'config.yaml');
 
     if (fs.existsSync(mdpath)) {
       mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');

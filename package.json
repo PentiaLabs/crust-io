@@ -1,6 +1,6 @@
 {
   "name": "crust-io",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": false,
   "description": "Static site generator with support for hiearichal page structure.",
   "keywords": [
@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "dir-to-json": "~0.0.3",
+    "findup-sync": "~0.3.0",
     "gulp": "",
     "js-yaml": "~3.4.0",
     "lodash": "~3.10.0",
