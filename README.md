@@ -30,7 +30,7 @@ var crust = require('crust-io');
 
 crust.compile(dir, { 
     sourceFolder : 'app/source',
-    templateFolder : 'app/templates/pages
+    templateFolder : 'app/templates/pages'
 });
 ```
 
