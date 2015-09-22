@@ -1,3 +1,0 @@
-# Baggrund
-
-Tekst om baggrund
