@@ -1,6 +1,6 @@
 # Crust
 
-Static site generator with support for hiearichal page structure.
+Static site generator with support for hierarchical page structure.
 
 ## Static site source
 
