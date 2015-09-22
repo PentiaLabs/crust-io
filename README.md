@@ -16,7 +16,41 @@ If you're not into getting things done for you, you can choose the custom way of
 
 ## How to use crust
 
-(TODO: Do detailed description on how to do stuff...)
+### Options
+
+| Name             | Type          | Default | Description   |
+| ---------------- | ------------- | ------------- |------------- |
+| sourceFolder     | `string`      | | Path to source folder that holds hierarchical page structure |
+| templateFolder   | `string`      | | Path to where the page type template files are located |
+
+### Basic usage:
+
+```js
+var crust = require('crust-io');
+
+crust.compile(dir, { 
+    sourceFolder : 'app/source',
+    templateFolder : 'app/templates/pages
+});
+```
+
+### Use with gulp
+
+```js
+var crust = require('crust-io');
+
+gulp.task('crust', function () {
+	var sourceFolder = 'app/source';
+
+	// the dir from which we should read the hierarchical page structure
+ 	var dir = path.join(__dirname, sourceFolder);
+
+	return crust.compile(dir, { 
+		sourceFolder : sourceFolder,
+		templateFolder : '/app/templates/pages/'
+	});
+});
+```
 
 ---
 ❤♥ Pentia ♥❤
