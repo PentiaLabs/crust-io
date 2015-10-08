@@ -1,6 +1,6 @@
 {
   "name": "crust-io",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": false,
   "description": "Static site generator with support for hiearichal page structure.",
   "keywords": [

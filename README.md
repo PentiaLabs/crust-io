@@ -6,7 +6,9 @@ Static site generator with support for hierarchical page structure.
 
 ### Generator
 
-To get started you need to have an app-folder with the page templates and content data. The best way to get this going, is to use the [Yeoman](http://yeoman.io) generator, which can be found here (TODO: insert link when generator is ready)
+To get started you need to have an app-folder with the page templates and content data. The best way to get a project structure set up, is to use the [Yeoman](http://yeoman.io) generator, which can be found here: [generator-crust](https://www.npmjs.com/package/generator-crust)
+
+Follow the instructions in the readme, and you should be up and running in no time.
 
 ### Custom setup
 
