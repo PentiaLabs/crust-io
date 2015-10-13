@@ -80,7 +80,7 @@ So if we have a source looking like this:
 │   │   ├── config.yaml
 │   ├── content.md
 │   ├── config.yaml
-```ß
+```
 
 | Filename         | Description   |
 | ---------------- | ------------- |
