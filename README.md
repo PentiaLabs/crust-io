@@ -80,10 +80,10 @@ So if we have a source looking like this:
 │   │   ├── config.yaml
 │   ├── content.md
 │   ├── config.yaml
-```
+```ß
 
-| Filename             | Description   |
-| ---------------- | |------------- |
+| Filename         | Description   |
+| ---------------- | ------------- |
 | content.md     | Contains content for a page, written in markdown. |
 | config.yaml   | Contains configuration for how to merge the content of content.md into templates. Look below for a sample |
 
