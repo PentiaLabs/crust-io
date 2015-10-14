@@ -1,6 +1,6 @@
 {
   "name": "crust-io",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "private": false,
   "description": "Static site generator with support for hiearichal page structure.",
   "keywords": [
@@ -17,12 +17,14 @@
     "Brian Frisch <brf@pentia.dk> (http://www.pentia.dk)"
   ],
   "scripts": {
+    "gulp" : "./node_modules/.bin/gulp",
     "crust": "gulp"
   },
   "dependencies": {
     "dir-to-json": "~0.0.3",
     "findup-sync": "~0.3.0",
-    "gulp": "",
+    "glob": "~5.0.15",
+    "gulp": "~3.9.0",
     "js-yaml": "~3.4.0",
     "lodash": "~3.10.0",
     "marked": "~0.3.3",

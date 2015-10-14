@@ -1,7 +1,5 @@
 # Crust
 
-***
-
 Static site generator with support for hierarchical page structure.
 
 ***
@@ -78,25 +76,63 @@ So if we have a source looking like this:
 │   ├── A third page
 │   │   ├── content.md
 │   │   ├── config.yaml
-│   ├── content.md
+│   ├── leftside.md
+│   ├── rightside.html
 │   ├── config.yaml
 ```
 
 | Filename         | Description   |
 | ---------------- | ------------- |
-| content.md     | Contains content for a page, written in markdown. |
+| placeholder_name.md     | Contains content for a placeholder, written in markdown. The filename must match a placeholder name inside crust. In this particular case ```{{ crust_placeholder_name }}``` |
+| placeholder_name.html     | Contains content for a placeholder, written in html. This is for when you want to inject certain HTML controls inside your templates. The filename must match a placeholder name inside crust. In this particular case ```{{ crust_placeholder_name }}``` |
 | config.yaml   | Contains configuration for how to merge the content of content.md into templates. Look below for a sample |
 
+Let's look at the ```Frontpage``` from the source example above as an example:
 
-An example of a ```config.yaml```:
+It has the following files associated:
+
+```
+├── leftside.md
+├── rightside.html
+├── config.yaml
+```
+
+This means that the template for this particular page should have the following placeholders: ```{{ crust_leftside }}``` and ```{{ crust_rightside }}```
+
+The content of ```config.yaml``` contains the following configuration:
 ```yaml
 ---
 template: toplevel
 
 ```
 
-This tells crust to put the generated content of the ```content.md```, lying on the same level as the ```config.yaml```-file, inside a template stored inside the ```app/templates/pages```-folder with the name ```toplevel```.
+And our templates should therefore have the following template-file inside it:
 
+```
+├── app/
+│   ├── source
+│   ├── templates
+│   │   ├── ...
+│   │   ├── pages
+│   │   │   ├── toplevel.html
+```
+
+Which contains the following markup:
+
+```html
+{% extends '../master/layout.html' %}
+
+<div class="row">
+  <div class="col-lg-6">
+    {{ crust_leftside }}
+  </div>
+  <div class="col-lg-6">
+    {{ crust_rightside }}
+ </div>
+</div>
+```
+
+Now when we run it through the crust compiler we should end up with a product that merges our template above with the markdown transformed content from ```leftside.md``` and the raw html from ```rightside.html``` replacing ```{{ crust_leftside }}``` and ```{{ crust_rightside }}``` respectively.
 
 If we generate the source-structure from before using crust, it will produce an output like this:
 

@@ -12,10 +12,11 @@
 /**
  * Module dependencies.
  */
-
+ var cwd = process.cwd();
  var dirToJson = require('dir-to-json');
  var findup = require('findup-sync');
  var fs = require('fs');
+ var glob = require('glob');
  var mkdirp = require('mkdirp');
  var marked = require('marked');
  var nunjucks = require('nunjucks');
@@ -24,7 +25,6 @@
  var slugify = require('slugify');
  var yaml = require('js-yaml');
  var _ = require('lodash');
- var cwd = process.cwd();
 
 /**
  * Crust constructor.
@@ -51,6 +51,7 @@
  */
 
  Crust.prototype.compile = function (dir, opts) {
+  var templateContents = {};
   var self = this;
   var workingdir;
 
@@ -101,9 +102,12 @@
       });
     }
 
+    // we should filter the file structure to get only folders back
+    // to have the most clean data to generate menus from
     newStructure = filtering(self.structure);
     self.structure = newStructure;
 
+    // let's run through the queue of pages that needs to be compiled
     _.each(self.compilationQueue, function (pageData) {
       var config = yaml.safeLoad(pageData.config);
 
@@ -111,19 +115,50 @@
         throw('Config.yaml in source directories must contain a page type configuration.');
       }
 
-      var nunjucksOpts = { 
-          currentLanguage: 'da',
-          title : pageData.structure.name,
-          path: pageData.structure.path,
-          slug: slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
-          parent: pageData.structure.parent,
-          structure: self.structure[0].children,
-          markdown: function markdown() { 
-            return marked(pageData.md); 
-          }
-      };
-      
       var template = path.join(self.templateFolder, config.template + '.html');
+
+      // nunjucks doesn't provide a clear way to get available placeholders in a template, so we need to figure this out ourselves,
+      // so we're able to present warnings if content isn't filled out for a declared template placeholder
+      var pattern = new RegExp('{{ crust_(.+) }}', 'gm');
+
+      // read the content of the template so we can find the placeholders
+      if (!templateContents[template]) {
+       templateContents[template] = fs.readFileSync(template, 'utf8');
+      }
+
+      // find all the placeholders inside the template
+      var placeholders = [];
+      var matches;
+      while ((matches = pattern.exec(templateContents[template])) !== null) {
+        placeholders.push(matches[1]);
+      }
+
+      // set our options for this template rendering
+      var nunjucksOpts = { 
+          currentLanguage : 'da',
+          title           : pageData.structure.name,
+          path            : pageData.structure.path,
+          slug            : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
+          parent          : pageData.structure.parent,
+          structure       : self.structure[0].children
+      };
+
+      // so run through each of the placeholders, so we can find the corresponding content
+      // or warn our user if content isn't defined for a declared block
+      var i;
+      for (i = 0; i < placeholders.length; i++) {
+        var placeholderContent = pageData.placeholderContent[placeholders[i]];
+
+        if (typeof placeholderContent !== 'undefined') {
+          if (placeholderContent.isMd) { // if we have content from a markdown file, we should compile it
+            nunjucksOpts['crust_' + placeholders[i]] = marked(placeholderContent.content);
+          }else{ // otherwise just push it in
+            nunjucksOpts['crust_' + placeholders[i]] = placeholderContent.content;
+          }
+        }else{
+          console.log('Warning: Did not find content for placeholder:', placeholders[i], 'in page:', pageData.structure.path);
+        }
+      }
 
       var compiled = nunjucks.render(template, nunjucksOpts);
 
@@ -180,9 +215,10 @@
   var name = level.name,
   children = level.children,
   type = level.type,
-  mdpath,
-  mdcontent,
-  configpath,
+  placeholderContent = {},
+  dirPath,
+  configPath,
+  contentFiles,
   configuration;
 
   if (name === '..' || name === '') {
@@ -191,24 +227,32 @@
 
   if (type === 'directory' && children && children.length) {
 
-    mdpath = path.join(cwd, this.sourceFolder, level.path, 'content.md');
-    configpath = path.join(cwd, this.sourceFolder, level.path, 'config.yaml');
+    dirPath = path.join(cwd, this.sourceFolder, level.path);
 
-    if (fs.existsSync(mdpath)) {
-      mdcontent = fs.readFileSync(mdpath, 'utf8').replace(/\r\n|\r/g, '\n');
-    }else{
-      throw('No content found');
-    }
+    // we support both md and html files to be injected into our placeholders, so let's look for those types
+    contentFiles = glob.sync('{*.md,*.html}', { cwd: dirPath });
+    configPath = path.join(dirPath, 'config.yaml');
 
-    if (fs.existsSync(configpath)) {
-      configuration = fs.readFileSync(configpath, 'utf8').replace(/\r\n|\r/g, '\n');
+    // run through each an find the content
+    _.each(contentFiles, function(filename) {
+      var completeFilepath = path.join(dirPath, filename);
+      var contentObj = {};
+      contentObj.content = fs.readFileSync(completeFilepath, 'utf8').replace(/\r\n|\r/g, '\n');
+      contentObj.isMd = path.extname(filename) === '.md';
+
+      placeholderContent[filename.split('.')[0]] = contentObj;
+    });
+
+    // find the configuration for this particular page
+    if (fs.existsSync(configPath)) {
+      configuration = fs.readFileSync(configPath, 'utf8').replace(/\r\n|\r/g, '\n');
     }else{
       throw('No configuration found');
     }
 
     // set options specifically for each nunjucks generation
     this.compilationQueue.push({
-      md: mdcontent,
+      placeholderContent: placeholderContent,
       config: configuration,
       structure : level
     });
