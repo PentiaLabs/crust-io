@@ -152,6 +152,33 @@ The content of the ```dist```-folder should be ready to ship to any web hosting 
 
 ***
 
+### Dynamic linking
+
+***
+
+Sometimes you would want to be able to link to a certain page from other templates.
+
+In Crust you can do this by defining a ```permalink``` token inside the ```config.yaml``` for that specific page.
+
+```config.yaml```:
+```yaml
+---
+template: toplevel
+permalink: my_link_token_for_this_page
+
+```
+
+To digest the link for this page, all you would need to do inside your templates would be:
+
+```some-template.html```:
+```html
+<a href="{{ crust__link_my_link_token_for_this_page }}">A link label</a>
+```
+
+And upon build, Crust will automatically put in the correct path for the page, making it completely unaffected by changes in folder renames and such.
+
+***
+
 ## How to use crust
 
 ***

@@ -34,10 +34,14 @@
 
  function Crust () {
   this.compilationQueue = [];
+
+  this.workingdir;
   this.sourceFolder = '';
   this.templateFolder = '';
+
   this.structure = {};
-  this.workingdir;
+  this.configurationMap = {};
+  this.permalinksMap = {};
 }
 
 /**
@@ -51,15 +55,19 @@
  */
 
  Crust.prototype.compile = function (dir, opts) {
-  var templateContents = {};
   var self = this;
+  var templateContents = {};
   var workingdir;
+
+  // set passed in folder settings
+  this.sourceFolder = opts.sourceFolder;
+  this.templateFolder = opts.templateFolder;
+
+  // we want to build a map for all configurations inside our source folder
+  this._buildConfigurationMap();
 
   // we'll be shoving generated markdown directly into nunjucks templates - so we need this to be unescaped
   nunjucks.configure({ autoescape: false });
-
-  this.sourceFolder = opts.sourceFolder;
-  this.templateFolder = opts.templateFolder;
 
   workingdir = findup(this.sourceFolder, { cwd: process.cwd() });
 
@@ -109,32 +117,17 @@
 
     // let's run through the queue of pages that needs to be compiled
     _.each(self.compilationQueue, function (pageData) {
-      var config = yaml.safeLoad(pageData.config);
+      var config = self.configurationMap[pageData.structure.path];
+      var template, placeholder, links, templateOptions, templateCompiled;
 
       if (typeof config.template === 'undefined') {
         throw('Config.yaml in source directories must contain a page type configuration.');
       }
 
-      var template = path.join(self.templateFolder, config.template + '.html');
-
-      // nunjucks doesn't provide a clear way to get available placeholders in a template, so we need to figure this out ourselves,
-      // so we're able to present warnings if content isn't filled out for a declared template placeholder
-      var pattern = new RegExp('{{ crust_(.+) }}', 'gm');
-
-      // read the content of the template so we can find the placeholders
-      if (!templateContents[template]) {
-       templateContents[template] = fs.readFileSync(template, 'utf8');
-      }
-
-      // find all the placeholders inside the template
-      var placeholders = [];
-      var matches;
-      while ((matches = pattern.exec(templateContents[template])) !== null) {
-        placeholders.push(matches[1]);
-      }
+      template = path.join(self.templateFolder, config.template + '.html');
 
       // set our options for this template rendering
-      var nunjucksOpts = { 
+      templateOptions = { 
           currentLanguage : 'da',
           title           : pageData.structure.name,
           path            : pageData.structure.path,
@@ -143,33 +136,138 @@
           structure       : self.structure[0].children
       };
 
-      // so run through each of the placeholders, so we can find the corresponding content
-      // or warn our user if content isn't defined for a declared block
-      var i;
-      for (i = 0; i < placeholders.length; i++) {
-        var placeholderContent = pageData.placeholderContent[placeholders[i]];
+      // TODO: collect all warnings and present warnings in a bulk
 
-        if (typeof placeholderContent !== 'undefined') {
-          if (placeholderContent.isMd) { // if we have content from a markdown file, we should compile it
-            nunjucksOpts['crust_' + placeholders[i]] = marked(placeholderContent.content);
-          }else{ // otherwise just push it in
-            nunjucksOpts['crust_' + placeholders[i]] = placeholderContent.content;
-          }
-        }else{
-          console.log('Warning: Did not find content for placeholder:', placeholders[i], 'in page:', pageData.structure.path);
-        }
-      }
+      // assign our templateData into the options for the rendering of this template
+      templateOptions = _.assign(templateOptions, self._interpretPlaceholders(template, pageData));
 
-      var compiled = nunjucks.render(template, nunjucksOpts);
+      templateCompiled = nunjucks.render(template, templateOptions);
 
+      // make sure destination folder is available
       mkdirp.sync(path.join('.tmp', pageData.structure.path));
 
-      fs.writeFileSync(path.join('.tmp', pageData.structure.path, 'index.html'), compiled);
+      // write compiled template with content to the correct structure in destinationfolder
+      fs.writeFileSync(path.join('.tmp', pageData.structure.path, 'index.html'), templateCompiled);
     });
 
   }).done();
 
 
+};
+
+/**
+ * Will read all config.yaml files and map them to their locations - this way we'll be able to do easy lookups for certain configurations
+ *
+ * @api private
+ */
+
+Crust.prototype._buildConfigurationMap = function () {
+  // TODO: rewrite this to async with a promise
+  var self = this;
+  var configurationFiles = glob.sync('**/config.yaml', { cwd: this.sourceFolder });
+  
+  _.each(configurationFiles, function (relpath) {
+    var config;
+    var mapPath = relpath.split('/config.yaml')[0];
+    var filepath = path.join(self.sourceFolder, relpath);
+    var filecontent = fs.readFileSync(filepath, 'utf8').replace(/\r\n|\r/g, '\n');
+
+    // process yaml
+    config = yaml.safeLoad(filecontent);
+
+    // if there's a permalink for this particular configuration-file we want to store the token for easy lookup later
+    if (typeof config.permalink !== 'undefined') {
+      self.permalinksMap[config.permalink] = mapPath;
+    }
+
+    // and let's store the configuration for this path for easy lookup as well
+    self.configurationMap[mapPath] = config;
+  });
+};
+
+/**
+ * Will parse out all placeholders inside a template and provide the necessary nunjucks options to 
+ * be able to interpolate the placeholders with content.
+ * 
+ * TODO: DRY - _interpretPlaceholders and _interpretPermalinks should be merged in some sort
+ * 
+ * @api private
+ */
+
+Crust.prototype._interpretPlaceholders = function (templatePath, pageData) {
+  // nunjucks doesn't provide a clear way to get available placeholders in a template, so we need to figure this out ourselves,
+  // so we're able to present warnings if content isn't filled out for a declared template placeholder
+  var pattern = new RegExp('{{ crust_([a-zA-Z]+) }}', 'gm');  
+  var placeholderData = {};
+  var templateContent, matches, placeholders, placeholderContent, i;
+  //var patternLink = new RegExp('{{ crust__link (.+) }}', 'gm');
+
+  // read the content of the template so we can find the placeholders
+  templateContent = fs.readFileSync(templatePath, 'utf8');
+
+  // find all the placeholders inside the template
+  placeholders = [];
+  while ((matches = pattern.exec(templateContent)) !== null) {
+    placeholders.push(matches[1]);
+  }
+
+  // so run through each of the placeholders, so we can find the corresponding content
+  // or warn our user if content isn't defined for a declared block
+  for (i = 0; i < placeholders.length; i++) {
+    var placeholderContent = pageData.placeholderContent[placeholders[i]];
+    var templateOptions;
+
+    if (typeof placeholderContent !== 'undefined') {
+      if (placeholderContent.isMd) { // if we have content from a markdown file, we should compile it
+        placeholderData['crust_' + placeholders[i]] = marked(placeholderContent.content);
+      }else{ // otherwise find links inside of html-source, compile template and put content into placeholder
+        templateOptions = this._interpretPermalinks(placeholderContent.content, pageData);
+
+        placeholderData['crust_' + placeholders[i]] = nunjucks.renderString(placeholderContent.content, templateOptions);
+      }
+    }else{
+      console.log('Warning: Did not find content for placeholder:', placeholders[i], 'in page:', pageData.structure.path);
+    }
+  }
+
+  return placeholderData;
+};
+
+/**
+ * Will parse out all permalinks inside a template and provide the necessary nunjucks options to 
+ * be able to interpolate the permalink tokens with actual links.
+ * 
+ * TODO: DRY - _interpretPlaceholders and _interpretPermalinks should be merged in some sort
+ *
+ * @api private
+ */
+
+Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
+  // nunjucks doesn't provide a clear way to get available placeholders in a template, so we need to figure this out ourselves,
+  // so we're able to present warnings if content isn't filled out for a declared template placeholder
+  var pattern = new RegExp('{{ crust__link_(.+) }}', 'gm');  
+  var linkData = {};
+  var matches, permalinks, placeholderContent, i;
+
+  // find all the permalinks inside the template
+  permalinks = [];
+  while ((matches = pattern.exec(templateContent)) !== null) {
+    permalinks.push(matches[1]);
+  }
+
+  // so run through each of the permalinks, so we can find the corresponding content
+  // or warn our user if content isn't defined for a declared block
+  for (i = 0; i < permalinks.length; i++) {
+    var placeholderContent = this.permalinksMap[permalinks[i]];
+
+    if (typeof placeholderContent !== 'undefined') {
+      linkData['crust__link_' + permalinks[i]] = '/' + this.permalinksMap[permalinks[i]];
+    }else{
+      console.log('Warning: Did not find link for permalink: crust__link_', permalinks[i], 'in page:', pageData.structure.path);
+    }
+  }
+
+  return linkData;
 };
 
 /**
