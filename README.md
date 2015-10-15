@@ -24,7 +24,7 @@ Follow the instructions in the readme, and you should be up and running in no ti
 
 Crust basically works by merging content into templates, eventually turning the finished product into static HTML.
 
-The source elements needs to reside inside the app-folder. The default way the folders inside app is structured is as follows:
+The source elements needs to reside inside the app-folder. The default way the folders inside app are structured is as follows:
 
 ```
 ├── app/
@@ -97,7 +97,8 @@ It has the following files associated:
 ├── config.yaml
 ```
 
-This means that the template for this particular page should have the following placeholders: ```{{ crust_leftside }}``` and ```{{ crust_rightside }}```
+This means that the template for this particular page should have the following placeholders:
+```{{ crust_leftside }}``` and ```{{ crust_rightside }}```
 
 The content of ```config.yaml``` contains the following configuration:
 ```yaml
@@ -158,9 +159,10 @@ The content of the ```dist```-folder should be ready to ship to any web hosting 
 
 Sometimes you would want to be able to link to a certain page from other templates.
 
-In Crust you can do this by defining a ```permalink``` token inside the ```config.yaml``` for that specific page.
+In Crust you can do this by defining a ```permalink``` token inside the ```config.yaml``` for the page you want to link to, thereby making it possible to identify it from within templates.
 
-```config.yaml```:
+```config.yaml``` :
+
 ```yaml
 ---
 template: toplevel
@@ -170,7 +172,8 @@ permalink: my_link_token_for_this_page
 
 To digest the link for this page, all you would need to do inside your templates would be:
 
-```some-template.html```:
+```some-template.html``` :
+
 ```html
 <a href="{{ crust__link_my_link_token_for_this_page }}">A link label</a>
 ```
@@ -179,7 +182,7 @@ And upon build, Crust will automatically put in the correct path for the page, m
 
 ***
 
-## How to use crust
+## API
 
 ***
 
