@@ -42,6 +42,7 @@
   this.structure = {};
   this.configurationMap = {};
   this.permalinksMap = {};
+  this.structureMap = {};
 }
 
 /**
@@ -97,6 +98,8 @@
     var filtering = function (data) {
       return _.filter(data, function (obj) {
         if (obj.type === 'directory') {
+          self.structureMap[obj.path] = obj;
+
           if (obj.children && obj.children.length) {
             obj.children = filtering(obj.children);
 
@@ -133,6 +136,7 @@
           path            : pageData.structure.path,
           slug            : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent          : pageData.structure.parent,
+          siblings        : self.structureMap[pageData.structure.parent].children,
           structure       : self.structure[0].children
       };
 
