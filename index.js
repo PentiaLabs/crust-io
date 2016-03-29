@@ -125,6 +125,8 @@
               delete obj['children'];
             }
 
+            obj.slug = slugify(obj.name);
+
             // if this particular node has a sorting of children in its configuration, now is a good time to effectuate that order
             if (self.configurationMap[obj.path] &&
                 self.configurationMap[obj.path].childSort && 
