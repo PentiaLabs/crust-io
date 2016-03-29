@@ -137,6 +137,7 @@
           slug            : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent          : pageData.structure.parent,
           siblings        : self.structureMap[pageData.structure.parent].children,
+          children        : self.structureMap[pageData.structure.path].children,
           structure       : self.structure[0].children
       };
 
