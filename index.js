@@ -93,11 +93,29 @@
   }).then(function () {
     var newStructure;
 
+    Array.prototype.move = function (old_index, new_index) {
+        while (old_index < 0) {
+            old_index += this.length;
+        }
+        while (new_index < 0) {
+            new_index += this.length;
+        }
+        if (new_index >= this.length) {
+            var k = new_index - this.length;
+            while ((k--) + 1) {
+                this.push(undefined);
+            }
+        }
+        this.splice(new_index, 0, this.splice(old_index, 1)[0]);
+        return this; // for testing purposes
+    };
+
     // remove all non-directory type files from the structure we're sending up to frontend
     // that way we can easily spec out menus
     var filtering = function (data) {
       return _.filter(data, function (obj) {
         if (obj.type === 'directory') {
+          // cache obj for this particular path so we're able to reference it shallowly when needed
           self.structureMap[obj.path] = obj;
 
           if (obj.children && obj.children.length) {
@@ -105,6 +123,21 @@
 
             if (obj.children.length === 0) {
               delete obj['children'];
+            }
+
+            // if this particular node has a sorting of children in its configuration, now is a good time to effectuate that order
+            if (self.configurationMap[obj.path] &&
+                self.configurationMap[obj.path].childSort && 
+                self.configurationMap[obj.path].childSort.length) {
+
+              _.each(self.configurationMap[obj.path].childSort, function(needle, newPos) {
+                var haystack = _.map(obj.children, function(child) {
+                  return child.name;
+                });
+                var existingPos = _.indexOf(haystack, needle);
+
+                obj.children = obj.children.move(existingPos, newPos);
+              });
             }
           }
 

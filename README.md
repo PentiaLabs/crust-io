@@ -182,6 +182,56 @@ And upon build, Crust will automatically put in the correct path for the page, m
 
 ***
 
+### Sorting children
+
+***
+
+Crust works with the file structure, so the default sorting of pages in the structure that's sent up to the templates for presentational interpolation will be the alphabetical order of the folders. You're able to override this default with an ordered array of all or some of the child node names in the ```config.yaml``` file.
+
+So if you have a source structure that reads as follows:
+
+```
+├── source/
+│   ├── Frontpage
+│   │   ├── Subpage A
+│   │   │   ├── content.md
+│   │   │   ├── config.yaml
+│   │   ├── Subpage B
+│   │   │   ├── content.md
+│   │   │   ├── config.yaml
+│   │   ├── Subpage C
+│   │   │   ├── content.md
+│   │   │   ├── config.yaml
+```
+
+And you for some reason want to have an order that reads: Subpage B, Subpage A, Subpage C, you can add the ```childSort``` array in the Frontpage ```config.yaml``` file as follows:
+
+```config.yaml``` :
+
+```yaml
+---
+template: some-template
+childSort:
+  - Subpage B
+  - Subpage A
+  - Subpage C
+```
+
+If you just want the Subpage C first and don't really care about the order of the rest of the pages you could make do with the following configuration:
+
+```config.yaml``` :
+
+```yaml
+---
+template: some-template
+childSort:
+  - Subpage C
+```
+
+This will result in Subpage C being first in the order and the rest in their default order.
+
+***
+
 ## API
 
 ***
