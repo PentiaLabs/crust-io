@@ -70,7 +70,7 @@
   // we'll be shoving generated markdown directly into nunjucks templates - so we need this to be unescaped
   nunjucks.configure({ autoescape: false });
 
-  workingdir = findup(this.sourceFolder, { cwd: process.cwd() });
+  workingdir = findup(this.sourceFolder, { cwd: cwd });
 
   if (workingdir) {
     // so we found the source folder - let's find the dir that it resides in
