@@ -12,7 +12,7 @@
 /**
  * Module dependencies.
  */
- var cwd = process.cwd();
+ var cwd = process.env.INIT_CWD;
  var dirToJson = require('dir-to-json');
  var findup = require('findup-sync');
  var fs = require('fs');
