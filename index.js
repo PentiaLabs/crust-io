@@ -74,13 +74,13 @@
 
   if (workingdir) {
     // so we found the source folder - let's find the dir that it resides in
-    cwd = workingdir.split(this.sourceFolder)[0];
+    cwd = workingdir.split(path.relative(process.cwd(), this.sourceFolder))[0];
 
     // and change our current working directory to that one, because that's where we'll be working from.
     process.chdir(cwd);
   } else {
     // we don't want to play anymore
-    throw('Source folder not found');
+    throw new Error('Source folder not found');
   }
 
   this._dirTree(dir).then(function (structure) {
@@ -129,7 +129,7 @@
 
             // if this particular node has a sorting of children in its configuration, now is a good time to effectuate that order
             if (self.configurationMap[obj.path] &&
-                self.configurationMap[obj.path].childSort && 
+                self.configurationMap[obj.path].childSort &&
                 self.configurationMap[obj.path].childSort.length) {
 
               _.each(self.configurationMap[obj.path].childSort, function(needle, newPos) {
@@ -155,17 +155,17 @@
 
     // let's run through the queue of pages that needs to be compiled
     _.each(self.compilationQueue, function (pageData) {
-      var config = self.configurationMap[pageData.structure.path];
+      var config = self.configurationMap[pageData.structure.path.replace(/\\/g,"/")];
       var template, placeholder, links, templateOptions, templateCompiled;
 
       if (typeof config.template === 'undefined') {
-        throw('Config.yaml in source directories must contain a page type configuration.');
+        throw new Error('Config.yaml in source directories must contain a page type configuration.');
       }
 
       template = path.join(self.templateFolder, config.template + '.html');
 
       // set our options for this template rendering
-      templateOptions = { 
+      templateOptions = {
           currentLanguage : 'da',
           title           : pageData.structure.name,
           path            : pageData.structure.path,
@@ -205,7 +205,7 @@ Crust.prototype._buildConfigurationMap = function () {
   // TODO: rewrite this to async with a promise
   var self = this;
   var configurationFiles = glob.sync('**/config.yaml', { cwd: this.sourceFolder });
-  
+
   _.each(configurationFiles, function (relpath) {
     var config;
     var mapPath = relpath.split('/config.yaml')[0];
@@ -226,18 +226,18 @@ Crust.prototype._buildConfigurationMap = function () {
 };
 
 /**
- * Will parse out all placeholders inside a template and provide the necessary nunjucks options to 
+ * Will parse out all placeholders inside a template and provide the necessary nunjucks options to
  * be able to interpolate the placeholders with content.
- * 
+ *
  * TODO: DRY - _interpretPlaceholders and _interpretPermalinks should be merged in some sort
- * 
+ *
  * @api private
  */
 
 Crust.prototype._interpretPlaceholders = function (templatePath, pageData) {
   // nunjucks doesn't provide a clear way to get available placeholders in a template, so we need to figure this out ourselves,
   // so we're able to present warnings if content isn't filled out for a declared template placeholder
-  var pattern = new RegExp('{{ crust_([a-zA-Z]+) }}', 'gm');  
+  var pattern = new RegExp('{{ crust_([a-zA-Z]+) }}', 'gm');
   var placeholderData = {};
   var templateContent, matches, placeholders, placeholderContent, i;
   //var patternLink = new RegExp('{{ crust__link (.+) }}', 'gm');
@@ -274,9 +274,9 @@ Crust.prototype._interpretPlaceholders = function (templatePath, pageData) {
 };
 
 /**
- * Will parse out all permalinks inside a template and provide the necessary nunjucks options to 
+ * Will parse out all permalinks inside a template and provide the necessary nunjucks options to
  * be able to interpolate the permalink tokens with actual links.
- * 
+ *
  * TODO: DRY - _interpretPlaceholders and _interpretPermalinks should be merged in some sort
  *
  * @api private
@@ -285,7 +285,7 @@ Crust.prototype._interpretPlaceholders = function (templatePath, pageData) {
 Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
   // nunjucks doesn't provide a clear way to get available placeholders in a template, so we need to figure this out ourselves,
   // so we're able to present warnings if content isn't filled out for a declared template placeholder
-  var pattern = new RegExp('{{ crust__link_(.+) }}', 'gm');  
+  var pattern = new RegExp('{{ crust__link_(.+) }}', 'gm');
   var linkData = {};
   var matches, permalinks, placeholderContent, i;
 
@@ -384,8 +384,8 @@ Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
     // find the configuration for this particular page
     if (fs.existsSync(configPath)) {
       configuration = fs.readFileSync(configPath, 'utf8').replace(/\r\n|\r/g, '\n');
-    }else{
-      throw('No configuration found');
+    } else {
+      throw new Error('No configuration found. Tried (' + configPath + ')');
     }
 
     // set options specifically for each nunjucks generation
