@@ -173,7 +173,8 @@
           parent          : pageData.structure.parent,
           siblings        : self.structureMap[pageData.structure.parent].children,
           children        : self.structureMap[pageData.structure.path].children,
-          structure       : self.structure[0].children
+          structure       : self.structure[0].children,
+          crustVars       : config.crustVars
       };
 
       // TODO: collect all warnings and present warnings in a bulk

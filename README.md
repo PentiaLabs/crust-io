@@ -153,6 +153,35 @@ The content of the ```dist```-folder should be ready to ship to any web hosting 
 
 ***
 
+### Custom variables
+
+***
+
+Sometimes you'd want to pass in custom variables for pages to be able to act on for presentational purposes. There's a special namespace reserve for this type of behaviour inside the ```config.yaml``` file for pages.
+
+Let's say you have some sort of additional meta data for an article. This could be the name of the author, that you'd like to pass into the rendering. You could add this piece of information in the ```config.yaml``` file like this:
+
+```yaml
+---
+template: some-template
+crustVars:
+  author:
+    name: John Doe
+    twitter: http://twitter.com/JohnDoe
+    
+```
+
+The ```crustVars``` object will be exposed upon generation of the HTML, so in your template you'd be able to react upon these information by doing something like the following:
+
+```html
+
+<a href="{{crustVars.author.twitter}}">{{crustVars.author.name}}</a>
+```
+
+If the crustVars object is absent it will simply be ignored by the compiler.
+
+***
+
 ### Dynamic linking
 
 ***
