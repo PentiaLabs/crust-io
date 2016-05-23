@@ -114,9 +114,11 @@
     // that way we can easily spec out menus
     var filtering = function (data) {
       return _.filter(data, function (obj) {
+        var objpath = slugify(obj.path).toLowerCase();
+
         if (obj.type === 'directory') {
           // cache obj for this particular path so we're able to reference it shallowly when needed
-          self.structureMap[obj.path] = obj;
+          self.structureMap[objpath] = obj;
 
           if (obj.children && obj.children.length) {
             obj.children = filtering(obj.children);
@@ -128,14 +130,15 @@
             obj.slug = slugify(obj.name).toLowerCase();
 
             // if this particular node has a sorting of children in its configuration, now is a good time to effectuate that order
-            if (self.configurationMap[obj.path] &&
-                self.configurationMap[obj.path].childSort &&
-                self.configurationMap[obj.path].childSort.length) {
+            if (self.configurationMap[objpath] &&
+                self.configurationMap[objpath].childSort &&
+                self.configurationMap[objpath].childSort.length) {
 
-              _.each(self.configurationMap[obj.path].childSort, function(needle, newPos) {
+              _.each(self.configurationMap[objpath].childSort, function(needle, newPos) {
                 var haystack = _.map(obj.children, function(child) {
                   return child.name;
                 });
+
                 var existingPos = _.indexOf(haystack, needle);
 
                 obj.children = obj.children.move(existingPos, newPos);
@@ -155,7 +158,7 @@
 
     // let's run through the queue of pages that needs to be compiled
     _.each(self.compilationQueue, function (pageData) {
-      var config = self.configurationMap[pageData.structure.path.replace(/\\/g,"/")];
+      var config = self.configurationMap[slugify(pageData.structure.path).toLowerCase()];
       var template, placeholder, links, templateOptions, templateCompiled;
 
       if (typeof config.template === 'undefined') {
@@ -171,8 +174,8 @@
           path            : pageData.structure.path,
           slug            : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent          : pageData.structure.parent,
-          siblings        : self.structureMap[pageData.structure.parent].children,
-          children        : self.structureMap[pageData.structure.path].children,
+          siblings        : self.structureMap[slugify(pageData.structure.parent).toLowerCase()].children,
+          children        : self.structureMap[slugify(pageData.structure.path).toLowerCase()].children,
           structure       : self.structure[0].children,
           crustVars       : config.crustVars
       };
@@ -222,7 +225,7 @@ Crust.prototype._buildConfigurationMap = function () {
     }
 
     // and let's store the configuration for this path for easy lookup as well
-    self.configurationMap[mapPath] = config;
+    self.configurationMap[slugify(mapPath).toLowerCase()] = config;
   });
 };
 
@@ -342,6 +345,18 @@ Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
  Crust.prototype._readLevel = function (filepath) {
     return (filepath.split('\\').length - 1); // TODO: make sure that slash is right according to file system
   };
+
+/**
+ * Replace \\ with _ to have paths translate into platform independent keys
+ *
+ * @param {String} Complete filepath as a string
+ * @api private
+ */
+
+ Crust.prototype._normalizePathString = function (pathstring) {
+    return pathstring.replace(/\\/g, '_');
+  };
+
 
 /**
  * Recursively run through and construct queue for site generation from folder structure
