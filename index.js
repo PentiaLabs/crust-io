@@ -174,15 +174,15 @@
       // set our options for this template rendering
       // TODO: tidy up here!
       templateOptions = {
-          currentLanguage : 'da',
-          title           : pageData.structure.name,
-          path            : pageData.structure.path,
-          slug            : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
-          parent          : pageData.structure.parent,
-          siblings        : self.structureMap[slugify(pageData.structure.parent).toLowerCase()] ? self.structureMap[slugify(pageData.structure.parent).toLowerCase()].children : null,
-          children        : self.structureMap[slugify(pageData.structure.path).toLowerCase()] ? self.structureMap[slugify(pageData.structure.path).toLowerCase()].children : null,
-          structure       : self.structure[0].children,
-          crustVars       : config.crustVars
+          currentLanguage         : 'da',
+          title                   : pageData.structure.name,
+          currentLocation         : pageData.structure.path || 'empty',
+          slug                    : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
+          parent                  : pageData.structure.parent,
+          siblings                : self.structureMap[slugify(pageData.structure.parent).toLowerCase()] ? self.structureMap[slugify(pageData.structure.parent).toLowerCase()].children : null,
+          children                : self.structureMap[slugify(pageData.structure.path).toLowerCase()] ? self.structureMap[slugify(pageData.structure.path).toLowerCase()].children : null,
+          structure               : self.structure[0].children,
+          crustVars               : config.crustVars
       };
 
       // TODO: collect all warnings and present warnings in a bulk
