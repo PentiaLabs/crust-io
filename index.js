@@ -113,8 +113,11 @@
     // that way we can easily spec out menus
     var filtering = function (data) {
       return _.filter(data, function (obj) {
-        var objpath = slugify(obj.path).toLowerCase();
+        // remove any double backslashed that dirToJson has cluttered strings up with
+        obj.path = obj.path.replace(/\\/g, '\\');
 
+        var objpath = slugify(obj.path).toLowerCase();
+        console.log(obj.path);
         if (!objpath) {
           objpath = 'root';
         }
