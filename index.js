@@ -323,15 +323,25 @@ Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
 
   // so run through each of the permalinks, so we can find the corresponding content
   // or warn our user if content isn't defined for a declared block
+
+  // array for holding warnings
+  var issuesList = [];
+
   for (i = 0; i < permalinks.length; i++) {
     var placeholderContent = this.permalinksMap[permalinks[i]];
 
     if (typeof placeholderContent !== 'undefined') {
       linkData['crust__link_' + permalinks[i]] = '/' + this.permalinksMap[permalinks[i]];
     }else{
-      console.log('Warning: Did not find link for permalink: crust__link_', permalinks[i], 'in page:', pageData.structure.path);
+      issuesList.push('Warning: Did not find link for permalink: crust__link_' + permalinks[i] + ' in page: ' + pageData.structure.path);
     }
   }
+
+  // push warnings, if any
+  if (issuesList.length) {
+    console.log(issuesList.join("\n"));
+  }
+
 
   return linkData;
 };
