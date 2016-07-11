@@ -66,18 +66,17 @@ So if we have a source looking like this:
 
 ```
 ├── source/
-│   ├── Frontpage
-│   │   ├── Subpage to frontpage
+│   ├── About us
+│   │   ├── Subpage about us
 │   │   │   ├── content.md
 │   │   │   ├── config.yaml
-│   ├── Some other page
+│   │   ├── leftside.md
+│   │   ├── rightside.html
+│   │   ├── config.yaml
+│   ├── Contact
 │   │   ├── content.md
 │   │   ├── config.yaml
-│   ├── A third page
-│   │   ├── content.md
-│   │   ├── config.yaml
-│   ├── leftside.md
-│   ├── rightside.html
+│   ├── content.md
 │   ├── config.yaml
 ```
 
@@ -87,7 +86,7 @@ So if we have a source looking like this:
 | placeholder_name.html     | Contains content for a placeholder, written in html. This is for when you want to inject certain HTML controls inside your templates. The filename must match a placeholder name inside crust. In this particular case ```{{ crust_placeholder_name }}``` |
 | config.yaml   | Contains configuration for how to merge the content of content.md into templates. Look below for a sample |
 
-Let's look at the ```Frontpage``` from the source example above as an example:
+Let's look at the ```About us``` from the source example above as an example:
 
 It has the following files associated:
 
@@ -103,7 +102,7 @@ This means that the template for this particular page should have the following 
 The content of ```config.yaml``` contains the following configuration:
 ```yaml
 ---
-template: toplevel
+template: page-about
 
 ```
 
@@ -115,7 +114,7 @@ And our templates should therefore have the following template-file inside it:
 │   ├── templates
 │   │   ├── ...
 │   │   ├── pages
-│   │   │   ├── toplevel.html
+│   │   │   ├── about.html
 ```
 
 Which contains the following markup:
@@ -139,17 +138,17 @@ If we generate the source-structure from before using crust, it will produce an 
 
 ```
 ├── dist/
-│   ├── Frontpage
-│   │   ├── Subpage to frontpage
+│   ├── About us
+│   │   ├── Subpage to about us
 │   │   │   ├── index.html
-│   ├── Some other page
+│   ├── Contacte
 │   │   ├── index.html
-│   ├── A third page
-│   │   ├── index.html
-│   ├── index.html
+├── index.html
 ```
 
 The content of the ```dist```-folder should be ready to ship to any web hosting provider possible and is now considered to be unattached to the crust framework. If you need to do changes, you should do them inside the ```source```-folder, run it through crust again and re-upload the content of the ```dist```-folder.
+
+Please note that the ```source```-folder itself has both content and config files associated to itself and will upon render be turned into the front page.
 
 ***
 

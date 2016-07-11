@@ -84,12 +84,11 @@
   }
 
   this._dirTree(dir).then(function (structure) {
-    var children = structure.children;
-
+    //var children = structure.children;
     self.structure = [];
     self.structure.push(structure);
 
-    _.each(children, self._traverse.bind(self));
+    self._traverse(structure);
   }).then(function () {
     var newStructure;
 
@@ -115,6 +114,10 @@
     var filtering = function (data) {
       return _.filter(data, function (obj) {
         var objpath = slugify(obj.path).toLowerCase();
+
+        if (!objpath) {
+          objpath = 'root';
+        }
 
         if (obj.type === 'directory') {
           // cache obj for this particular path so we're able to reference it shallowly when needed
@@ -158,7 +161,8 @@
 
     // let's run through the queue of pages that needs to be compiled
     _.each(self.compilationQueue, function (pageData) {
-      var config = self.configurationMap[slugify(pageData.structure.path).toLowerCase()];
+      var config = self.configurationMap[slugify(pageData.dictPath).toLowerCase()];
+
       var template, placeholder, links, templateOptions, templateCompiled;
 
       if (typeof config.template === 'undefined') {
@@ -168,14 +172,15 @@
       template = path.join(self.templateFolder, config.template + '.html');
 
       // set our options for this template rendering
+      // TODO: tidy up here!
       templateOptions = {
           currentLanguage : 'da',
           title           : pageData.structure.name,
           path            : pageData.structure.path,
           slug            : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent          : pageData.structure.parent,
-          siblings        : self.structureMap[slugify(pageData.structure.parent).toLowerCase()].children,
-          children        : self.structureMap[slugify(pageData.structure.path).toLowerCase()].children,
+          siblings        : self.structureMap[slugify(pageData.structure.parent).toLowerCase()] ? self.structureMap[slugify(pageData.structure.parent).toLowerCase()].children : null,
+          children        : self.structureMap[slugify(pageData.structure.path).toLowerCase()] ? self.structureMap[slugify(pageData.structure.path).toLowerCase()].children : null,
           structure       : self.structure[0].children,
           crustVars       : config.crustVars
       };
@@ -213,6 +218,11 @@ Crust.prototype._buildConfigurationMap = function () {
   _.each(configurationFiles, function (relpath) {
     var config;
     var mapPath = relpath.split('/config.yaml')[0];
+
+    if (mapPath === 'config.yaml') {
+      mapPath = 'root';
+    }
+
     var filepath = path.join(self.sourceFolder, relpath);
     var filecontent = fs.readFileSync(filepath, 'utf8').replace(/\r\n|\r/g, '\n');
 
@@ -373,7 +383,8 @@ Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
   dirPath,
   configPath,
   contentFiles,
-  configuration;
+  configuration,
+  dictPath;
 
   if (name === '..' || name === '') {
     return;
@@ -382,6 +393,11 @@ Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
   if (type === 'directory' && children && children.length) {
 
     dirPath = path.join(cwd, this.sourceFolder, level.path);
+
+    dictPath = level.path;
+    if (!dictPath) {
+      dictPath = 'root';
+    }
 
     // we support both md and html files to be injected into our placeholders, so let's look for those types
     contentFiles = glob.sync('{*.md,*.html}', { cwd: dirPath });
@@ -408,7 +424,8 @@ Crust.prototype._interpretPermalinks = function (templateContent, pageData) {
     this.compilationQueue.push({
       placeholderContent: placeholderContent,
       config: configuration,
-      structure : level
+      structure : level,
+      dictPath : dictPath
     });
 
     _.each(children, this._traverse.bind(this));
