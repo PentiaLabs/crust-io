@@ -114,7 +114,7 @@
     var filtering = function (data) {
       return _.filter(data, function (obj) {
         var objpath = slugify(obj.path).toLowerCase();
-        
+
         if (!objpath) {
           objpath = 'root';
         }
@@ -162,6 +162,8 @@
     // let's run through the queue of pages that needs to be compiled
     _.each(self.compilationQueue, function (pageData) {
       var config = self.configurationMap[slugify(pageData.dictPath).toLowerCase()];
+      var currentSlug = slugify(pageData.structure.parent).toLowerCase();
+      var structureMapIdent = self.structureMap[currentSlug];
 
       var template, placeholder, links, templateOptions, templateCompiled;
 
@@ -179,8 +181,8 @@
           path            : pageData.structure.path,
           slug            : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent          : pageData.structure.parent,
-          siblings        : self.structureMap[slugify(pageData.structure.parent).toLowerCase()] ? self.structureMap[slugify(pageData.structure.parent).toLowerCase()].children : null,
-          children        : self.structureMap[slugify(pageData.structure.path).toLowerCase()] ? self.structureMap[slugify(pageData.structure.path).toLowerCase()].children : null,
+          siblings        : structureMapIdent ? structureMapIdent.children : null,
+          children        : structureMapIdent ? structureMapIdent.children : null,
           structure       : self.structure[0].children,
           crustVars       : config.crustVars
       };
