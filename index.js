@@ -267,6 +267,10 @@ Crust.prototype._interpretPlaceholders = function (templatePath, pageData) {
 
   // so run through each of the placeholders, so we can find the corresponding content
   // or warn our user if content isn't defined for a declared block
+
+  // array for holding warnings
+  var issuesList = [];
+
   for (i = 0; i < placeholders.length; i++) {
     var placeholderContent = pageData.placeholderContent[placeholders[i]];
     var templateOptions;
@@ -279,9 +283,15 @@ Crust.prototype._interpretPlaceholders = function (templatePath, pageData) {
 
         placeholderData['crust_' + placeholders[i]] = nunjucks.renderString(placeholderContent.content, templateOptions);
       }
-    }else{
-      console.log('Warning: Did not find content for placeholder:', placeholders[i], 'in page:', pageData.structure.path);
     }
+    else {
+      issuesList.push('Warning: Did not find content for placeholder: ' + placeholders[i] + ' in page: ' + pageData.structure.path);
+    }
+  }
+
+  // push warnings, if any
+  if (issuesList.length) {
+    console.log(issuesList.join("\n"));
   }
 
   return placeholderData;
