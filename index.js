@@ -179,10 +179,11 @@
           currentLanguage         : 'da',
           title                   : pageData.structure.name,
           currentLocation         : pageData.structure.path || 'empty',
+          currentLocationParent   : pageData.structure.path.split("\\").slice(0, -1).join("\\"),
           slug                    : slugify(path.normalize(pageData.structure.path.replace('/', '-').toLowerCase())),
           parent                  : pageData.structure.parent,
-          siblings        : structureMapIdent ? structureMapIdent.children : null,
-          children        : structureMapIdent ? structureMapIdent.children : null,
+          siblings                : structureMapIdent ? structureMapIdent.children : null,
+          children                : structureMapIdent ? structureMapIdent.children : null,
           structure               : self.structure[0].children,
           crustVars               : config.crustVars
       };
