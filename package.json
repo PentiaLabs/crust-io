@@ -27,6 +27,7 @@
     "dir-to-json": "~0.0.3",
     "findup-sync": "~0.3.0",
     "glob": "~5.0.15",
+    "glob-promise": "^2.0.0",
     "gulp": "~3.9.0",
     "gulp-util": "^3.0.7",
     "js-yaml": "~3.4.0",

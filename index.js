@@ -2,6 +2,7 @@
 
 const readConfig = require('./lib/readConfig');
 const readTemplate = require('./lib/readTemplate');
+const prepareContent = require('./lib/prepareContent');
 
 module.exports = (opts, folder) => {
 	opts = Object.assign({
@@ -12,8 +13,12 @@ module.exports = (opts, folder) => {
 	let templating = configuring.then( ( config ) => {
 		return readTemplate( opts, config );
 	} );
+	let contentPreparing = templating.then( (template) => {
+		return prepareContent( folder, template );
+	} );
 
-  // TODO: dataing / enriching
+
+  // TODO: dataing / contentPreparing
     // TODO: permalinking
   // TODO: sorting
   // TODO: search indexing
@@ -24,9 +29,10 @@ module.exports = (opts, folder) => {
 
   // TODO: compile template
 
-	return Promise.all([configuring, templating]).then(values => {
+	return Promise.all( [ configuring, templating, contentPreparing ] ).then(values => {
 		//console.log(values[0]); // config
 		//console.log(values[1]); // template
+		console.log(values[2]);
 	}, reason => {
 		console.log(reason)
 	});
