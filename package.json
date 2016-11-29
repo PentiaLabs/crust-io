@@ -42,7 +42,9 @@
   },
   "homepage": "https://github.com/PentiaLabs/crust-io#readme",
   "main": "index.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "eslint": "^3.11.1"
+  },
   "author": "Brian Frisch <brf@pentia.dk> (http://frisch.io)",
   "license": "ISC"
 }
