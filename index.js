@@ -35,7 +35,7 @@ module.exports = (opts, folder) => {
 	return Promise.all( [ configuring, templating, contentPreparing ] ).then( values => {
 		//console.log(values[0]); // config
 		//console.log(values[1]); // template
-		//console.log(values[2]); // content
+		console.log(values[2]); // content
 	}, reason => {
 		console.log(reason)
 	});
