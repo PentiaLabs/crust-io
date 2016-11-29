@@ -1,0 +1,41 @@
+{% set sep = "\\" %}
+{% if path.split(sep).length == 1 %}
+    {% set sep = "/" %}
+{% endif %}
+
+{% set parentpath = path.split(sep)[0] %}
+
+{% macro renderMenu(menuStructure) %}
+	<li {% if parentpath == menuStructure.path %} class="active"{% endif %}{% if path == menuStructure.path %} class="active"{% endif %}>
+		{% if menuStructure.children[0].children.length %}
+			<a href="/{{menuStructure.children[0].children[0].path}}/">{{menuStructure.name}}</a>
+		{% else %}
+			<a href="/{{menuStructure.children[0].path}}/">{{menuStructure.name}}</a>
+		{% endif %}
+	</li>
+{% endmacro %}
+
+{% macro renderSubMenu(menuStructure) %}
+	<li {% if parentpath == menuStructure.path %} class="active"{% endif %}{% if path == menuStructure.path %} class="active"{% endif %}>
+		<a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a>
+	</li>
+{% endmacro %}
+
+
+<ul>
+{% for menu in structure %}
+	{{ renderMenu(menu) }}
+{% endfor %}
+</ul>
+
+<ul>
+	{% for menu in structure %}				
+		{% if menu.children.length %}
+			{% for child in menu.children %}
+				
+					{{ renderSubMenu(child) }}
+				
+			{% endfor %}
+		{% endif %}
+	{% endfor %}
+</ul>

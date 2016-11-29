@@ -1,0 +1,16 @@
+{% set sep = "\\" %}
+
+{% if path.split(sep).length == 1 %}
+    {% set sep = "/" %}
+{% endif %}
+
+{% set pathparts = path.split(sep) %}
+
+ <ul class="breadcrumbs">
+ 	{% set currentPath = "" %}
+ 	{% for pathpart in pathparts %}
+ 		{% set currentPath = currentPath + sep + pathpart %}
+ 		<li><a href="{{currentPath}}">{{pathpart}}</a></li>
+ 		<li>&raquo;</li>
+ 	{% endfor %}
+ </ul>

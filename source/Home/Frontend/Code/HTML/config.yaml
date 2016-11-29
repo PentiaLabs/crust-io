@@ -1,0 +1,7 @@
+---
+template: page-toc
+childSort:
+  - Basic principles
+  - Style Guide
+  - Semantics
+  - Accessibility

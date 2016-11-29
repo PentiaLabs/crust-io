@@ -1,0 +1,46 @@
+{% set sep = "\\" %}
+{% if path.split(sep).length == 1 %}
+    {% set sep = "/" %}
+{% endif %}
+
+{% set parentpath = path.split(sep).slice(0, -1) %}
+{% set parentnode = parentpath.pop() %}
+
+{% set category = path.split(sep)[1] %}
+
+{% set cover = category | lower %}
+
+<aside class="article-sidebar article-sidebar--toc">
+    <a class="trigger" href="#" data-toggle="article-sidebar-nav">
+        Table of Contents
+    </a>
+    
+    <nav id="article-sidebar-nav" class="article-sidebar-nav article-sidebar-nav--toc" data-toggle-target="hide">
+
+        <div class="toc-sidebar">
+            <div class="toc-sidebar__cover">
+            <a class="manual-cover manual-cover--{{cover}}" href="/{{path}}">
+                <h2 class="manual-title">{{title}}</h2>
+                <div class="manual-subtitle">SOP</div>
+                <div class="manual-stack">{% if category != "Home" %}{{category}}{% endif %}</div>
+                <img class="manual-icon" src="/images/pentialogo.svg" alt="">
+            </a>
+            </div>
+            <div class="toc-sidebar__toc">
+                <h2 class="manual-toc-heading">Table of Contents {{parentpath}}</h2>
+
+                <ul class="article-list article-list--toc">
+                {% for child in children %}
+                    <li>
+                        <a class="article-link" href="/{{child.path}}">
+                            <div class="article-title">{{child.name}}</div>
+                            <div class="article-description">
+                            </div>
+                        </a>
+                    </li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+</aside>

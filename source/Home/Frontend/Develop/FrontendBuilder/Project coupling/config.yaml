@@ -1,0 +1,6 @@
+---
+template: page-toc
+childSort:
+  - Project setup
+  - Installing DesignResources
+  - Referencing assets

@@ -1,0 +1,15 @@
+{% macro renderMenu(menuStructure) %}
+  <li {% if path == menuStructure.path %} class="active"{% endif %}>
+      <a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a>
+  </li>
+{% endmacro %}
+
+
+{% for menu in structure %}
+  {{ renderMenu(menu) }}
+  {% for child in menu.children %}
+    {% if child.parent == path %}
+      {{ renderMenu(child) }}
+    {% endif %}
+  {% endfor %}
+{% endfor %}

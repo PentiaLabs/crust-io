@@ -1,0 +1,5 @@
+---
+template: page-toc
+childSort:
+  - Style Guide
+  - Mediator Pattern

@@ -1,0 +1,12 @@
+---
+template: page-toc
+childSort:
+  - Template Inheritance
+  - Use Item Ids
+  - Keep Constants in separate class
+  - Never alter Sitecore files
+  - Set field titles on all fields
+  - Set icons on all template sections
+  - Set display names
+  - Presentation Details
+  - Insert Options

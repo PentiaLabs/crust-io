@@ -1,0 +1,6 @@
+---
+template: page-toc
+childSort:
+  - Machine requirements
+  - Configuration reference
+  - Running the builder

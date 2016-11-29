@@ -1,0 +1,32 @@
+{% macro renderMenu(menuStructure) %}
+	<li class="li-1" role="presentation"><a class="a-1 section--{{menuStructure.slug}}" href="/{{menuStructure.path}}/">{{menuStructure.name}}</a>
+	{% if menuStructure.children.length %}
+			<ul class="ul-2">
+			{% for child in menuStructure.children %}
+				{% if child.type == 'directory' %}
+						{{ renderSubMenu(child) }}
+				{% endif %}
+			{% endfor %}
+			</ul>
+	{% endif %}	
+	</li>
+{% endmacro %}
+
+{% macro renderSubMenu(menuStructure) %}
+	<li class="li-2">
+		<a class="a-2" href="/{{menuStructure.path}}/">{{menuStructure.name}}</a>
+	</li>
+{% endmacro %}
+
+<ul class="ul-1">
+{% for menu in structure %}				
+		{% if menu.children.length %}
+				{% for child in menu.children %}
+					{% if menu.type == 'directory' %}
+						{{ renderMenu(child) }}
+					{% endif %}
+				{% endfor %}
+		{% endif %}
+{% endfor %}
+</ul>
+	 

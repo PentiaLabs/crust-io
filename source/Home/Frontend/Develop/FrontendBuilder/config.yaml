@@ -1,0 +1,8 @@
+---
+template: page-manuals-toc
+childSort:
+  - About
+  - Getting started
+  - Project coupling
+  - Troubleshooting
+  - Contributing

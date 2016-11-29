@@ -1,0 +1,31 @@
+
+{% extends '../master/layout.html' %}
+
+{% block title %} {{ title }} {% endblock %}
+
+{% block pagetype %}
+<div class="page-article">
+    <div class="article-layout">
+        
+        <article class="article article-main">
+            {{ crust_content }}
+        </article>
+        
+
+        {% include '../components/article-sidebar.html' %}
+    </div>
+    <nav class="inter-article-nav">
+        <a href="/playbooks/performance-testing/tools" class="nav-item-prev">
+            <!-- <div class="label">Previous</div>
+            <div class="value">Tools</div> -->
+        </a>
+
+        <div class="nav-item-next disabled">
+            <!-- <div class="label">Last Page</div>
+            <div class="value">…has an end.</div> -->
+        </div>
+
+    </nav>
+</div>
+{% include '../components/related-manuals.html' %}    
+{% endblock %}

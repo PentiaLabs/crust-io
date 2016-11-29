@@ -1,0 +1,74 @@
+
+<!doctype html>
+<!--[if lt IE 7 ]> <html lang="en-us" dir="ltr" class="no-js ie6"> <![endif]-->
+<!--[if IE 7 ]>    <html lang="en-us" dir="ltr" class="no-js ie7"> <![endif]-->
+<!--[if IE 8 ]>    <html lang="en-us" dir="ltr" class="no-js ie8"> <![endif]-->
+<!--[if IE 9 ]>    <html lang="en-us" dir="ltr" class="no-js ie9"> <![endif]-->
+<!--[if (gt IE 9)|!(IE)]> <html lang="en-us" dir="ltr" class="no-js"> <![endif]-->
+<head>
+    <meta charset="utf-8" />
+
+    <title>{% block title %}{% endblock %} | Pentia SOPs</title>
+
+    {% block head %}
+
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet' type='text/css'>
+    
+    <!-- build:css /styles/maincss-3.css -->
+    <link rel="stylesheet" href="/styles/main.css">
+    <!-- endbuild -->
+
+    <meta name="viewport" content="initial-scale=1.0, width=device-width" />
+    <meta name="application-name" content="Pentia.dk" />
+
+    <meta name="msapplication-TileColor" content="#3f3f3f" />
+    <link rel="shortcut icon" href="/images/touch/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="/images/touch/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="57x57" href="/images/touch/apple-touch-icon-57x57.png" />
+    <link rel="apple-touch-icon" sizes="72x72" href="/images/touch/apple-touch-icon-72x72.png" />
+    <link rel="apple-touch-icon" sizes="114x114" href="/images/touch/apple-touch-icon-114x114.png" />
+    <link rel="apple-touch-icon" sizes="144x144" href="/images/touch/apple-touch-icon-144x144.png" />
+    <meta name="msapplication-square70x70logo" content="/images/touch/smalltile.png" />
+    <meta name="msapplication-square150x150logo" content="/images/touch/mediumtile.png" />
+    <meta name="msapplication-wide310x150logo" content="/images/touch/widetile.png" />
+    <meta name="msapplication-square310x310logo" content="/images/touch/largetile.png" />
+
+    {% endblock %}
+</head>
+
+<body class="{{slug}}">
+    <div class="page-wrapper">
+
+    {% include '../components/header.html' %}
+    {% include '../components/breadcrumbs.html' %}
+    
+    <div class="page-matter">
+        {% block pagetype %}{% endblock %}
+    </div>
+
+    <footer class="page-footer">
+        <div class="footer-layout">
+            <div class="footer-layout-box footer-about">
+                <h2>What is this all about?</h2>
+
+                <p>
+                    SOPs are guides for how we do our work.
+                    They document the principles, standards, and practices that Pentia works by.
+                    They are SOPs - Standard Operating Procedures. We've put a lot of work into defining the way we think is the best, jotting it down, structuring and presenting them here, so we expect you to follow them when you work with us. Thanks!
+                </p>
+            </div>
+        </div>
+
+        <div class="copyright">
+            ❤ 2016
+            Pentia
+        </div>
+    </footer>
+
+<div class="overlay"></div>
+</div>
+<script defer src="/scripts/modernizr.min.js"></script>
+<script defer src="/scripts/main.js"></script>
+<script defer src="/scripts/prism.js"></script>
+</body>
+</html>

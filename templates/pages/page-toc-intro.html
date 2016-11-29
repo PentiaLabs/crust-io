@@ -1,0 +1,25 @@
+{% extends '../master/layout.html' %}
+
+{% set sep = "\\" %}
+{% if path.split(sep).length == 1 %}
+    {% set sep = "/" %}
+{% endif %}
+
+{% set parentpath = path.split(sep).slice(0, -1) %}
+{% set category = parentpath.pop() %}
+
+{% block title %} {{ title }} {% endblock %}
+
+{% block pagetype %}
+<div class="page-toc-intro">
+	<div class="article-layout">
+        
+    <article class="article article-main">
+      {{ crust_content }}
+    </article>
+        
+
+    {% include '../components/toc-sidebar.html' %}
+  </div>
+</div>
+{% endblock %}

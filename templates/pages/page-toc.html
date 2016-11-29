@@ -1,0 +1,48 @@
+{% extends '../master/layout.html' %}
+
+{% set sep = "\\" %}
+{% if path.split(sep).length == 1 %}
+    {% set sep = "/" %}
+{% endif %}
+
+{% set category = path.split(sep)[2] %}
+
+{% block title %} {{ title }} {% endblock %}
+
+{% block pagetype %}
+<div class="page-toc">
+	<div class="manual-layout">
+		<article class="manual-main">
+
+
+			<h2 class="manual-toc-heading">Table of Contents</h2>
+
+			<ul class="article-list">
+			{% for child in children %}
+				<li>
+					<a class="article-link" href="/{{child.path}}">
+						<div class="article-title">{{child.name}}</div>
+						<div class="article-description">
+						</div>
+					</a>
+				</li>
+			{% endfor %}
+			</ul>
+		</article>
+
+		{% set cover = category | lower %}
+		{% if category == "Home" %}
+			{% set cover = title | lower %}
+		{% endif %}
+
+		<aside class="manual-sidebar">
+			<a class="manual-cover manual-cover--{{cover}}" href="/{{path}}">
+				<h2 class="manual-title">{{title}}</h2>
+				<div class="manual-subtitle">SOP</div>
+				<div class="manual-stack">{% if category != "Home" %}{{category}}{% endif %}</div>
+				<img class="manual-icon" src="/images/pentialogo.svg" alt="">
+			</a>
+		</aside>
+	</div>
+</div>
+{% endblock %}

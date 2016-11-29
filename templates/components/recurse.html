@@ -1,0 +1,19 @@
+{% macro renderMenu(menuStructure) %}
+	<li role="presentation"><a href="/{{menuStructure.path}}/">{{menuStructure.name}}</a></li>
+	{% if menuStructure.children.length %}
+			{% for child in menuStructure.children %}
+				{% if child.type == 'directory' %}
+						{{ renderMenu(child) }}
+				{% endif %}
+			{% endfor %}
+	{% endif %}	
+{% endmacro %}
+
+<ul>
+{% for menu in structure %}
+	{% if menu.type == 'directory' %}
+		{{ renderMenu(menu) }}
+	{% endif %}
+{% endfor %}
+</ul>
+	 

@@ -1,0 +1,49 @@
+{% set sep = "\\" %}
+{% if path.split(sep).length == 1 %}
+    {% set sep = "/" %}
+{% endif %}
+
+{% set baseStructure = "" %}
+
+{% set currentManual = path.split(sep).slice(0, -1).pop() %}
+{% set parentpath = path.split(sep).slice(0, -2) %}
+{% set parentnode = parentpath.pop() %}
+{% set currentParentFullPath = path.split(sep).slice(0, -2).join(sep) %}
+
+{% macro renderRelated(menuStructure) %}
+    {% if menuStructure.path == currentParentFullPath %}
+        {% set baseStructure = menuStructure %}
+
+        {% for child in menuStructure.children %}
+            {% if child.name != currentManual %}
+            <li>
+                <a class="manual-cover manual-cover--{{parentnode | lower}}" href="/{{child.path}}">
+                    <h2 class="manual-title"><div>{{child.name}}</div></h2>
+                    <div class="manual-subtitle">SOP</div>
+                    <div class="manual-stack">{{parentnode}}</div>
+                    <img class="manual-icon" src="/images/pentialogo.svg" alt="">
+                </a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+
+    {% endif %}
+    {% if baseStructure == "" %}
+        {% for child in menuStructure.children %}
+            {{ renderRelated(child) }}
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+<!-- Get all of parents siblings except myself -->
+<section class="related-manuals">
+    <h1>More from the “{{parentnode}}” stack</h1>
+
+    <!-- Find out which level to start from (we need to traverse through the structure and stop when we have a positive comparison on the current path) -->
+    <ul class="manual-list">
+    {% for menu in structure %}
+        {{ renderRelated(menu) }}
+    {% endfor %}
+    </ul>
+</section>

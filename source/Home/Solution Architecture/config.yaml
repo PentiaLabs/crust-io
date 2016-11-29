@@ -1,0 +1,8 @@
+---
+template: page-landing
+childSort:
+  - Overview
+  - Getting Started
+  - Gulp Tasks
+  - Configuration Settings
+  
