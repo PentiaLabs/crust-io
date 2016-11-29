@@ -1,36 +1,33 @@
 'use strict';
 
-// TODO: remember this is the gulp-crust plugin - crust itself lives in crust.js (separate!)
+const readConfig = require('./lib/readConfig');
+const readTemplate = require('./lib/readTemplate');
 
-const crust = require('./crust');
-const gutil = require('gulp-util');
-const through = require('through2');
-
-module.exports = opts => {
-	opts = Object.assign({
+module.exports = (opts, folder) => {
+  opts = Object.assign({
+    isEditor : false // TODO: future feature - by setting this to true we can inject something into the templating, where we'll be able to do wysiwyg stuff
 	}, opts);
 
-	return through.obj(function (file, enc, cb) {
-		if (!file.isNull()) {
-			cb(null, file);
-			return;
-		}
+  let configuring = readConfig( folder );
+  let templating = configuring.then( ( config ) => {
+    return readTemplate( opts, config );
+  } );
 
-		if (file.isStream()) {
-			cb(new gutil.PluginError('gulp-crust', 'Streaming not supported'));
-			return;
-		}
+  // TODO: dataing / enriching
+    // TODO: permalinking
+  // TODO: sorting
+  // TODO: search indexing
+  // TODO:
+  // write a compiler that can read configuration, meta-data and content and compile through various renderers:
+  //  - one that can write html
+  //  - one that can write json index files for each node
 
-    (crust( opts , file.path ), function (err, generatedHtml) {
-			if (err) {
-				cb(new gutil.PluginError('gulp-crust', err, {fileName: file.path}));
-				return;
-			}
+  // TODO: compile template
 
-			file.contents = new Buffer(generatedHtml);
-			cb(null, file);
-		});
-
-		cb(null, file);
+  Promise.all([configuring, templating]).then(values => {
+    //console.log(values[0]); // config
+    //console.log(values[1]); // template
+  }, reason => {
+    console.log(reason)
   });
 };

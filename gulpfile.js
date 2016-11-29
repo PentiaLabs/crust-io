@@ -1,7 +1,7 @@
 'use strict';
 
 const gulp = require('gulp');
-const crust = require('./index');
+const crust = require('./gulp-plugin');
 
 gulp.task('default', () =>
     gulp.src('./source/**')
