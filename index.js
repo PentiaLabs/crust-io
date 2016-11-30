@@ -36,11 +36,12 @@ module.exports = (opts, folder) => {
 
 	// and let's stitch everything together
 	return Promise.all( [ configuring, templating, contentPreparing ] ).then( values => {
+		let config = values[0];
+		let content = values[2];
 
 		// TODO: this is just squashed in here for poc purposes - needs to be prettier
-		
 		return {
-			contents : nunjucks.render( values[0].template + '.html', values[2] ),
+			contents : nunjucks.render( config.template + '.html', content),
 			folder : folder
 		};
 	}, reason => {
