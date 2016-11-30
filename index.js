@@ -19,6 +19,7 @@ module.exports = (opts, folder) => {
 		isEditor : false // TODO: future feature - by setting this to true we can inject something into the templating, where we'll be able to do wysiwyg stuff
 	}, opts);
 
+	// TODO: this is just squashed in here for poc purposes - needs to be prettier
 	nunjucks.configure(opts.templatePath, { autoescape: false });
 
 	// let's just get our config file for this leaf in the file structure

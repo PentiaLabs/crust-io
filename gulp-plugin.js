@@ -6,10 +6,6 @@ const path = require('path');
 const through = require('through2');
 
 module.exports = opts => {
-	opts = Object.assign({
-		ext: '.html'
-	}, opts);
-
 	return through.obj( function (file, enc, callback) {
 		// we don't take kindly to non-directories around here
 		if (!file.isNull()) {
@@ -21,6 +17,10 @@ module.exports = opts => {
 			callback(new gutil.PluginError('gulp-crust', 'Streaming not supported'));
 			return;
 		}
+		
+		opts = Object.assign({
+			sourceFolder: file.base
+		}, opts);
 
 		let stream = this;
 
