@@ -4,10 +4,8 @@
 // TODO: search indexing
 // TODO:
 // write a compiler that can read configuration, meta-data and content and compile through various renderers:
-//  - one that can write html
+//  - one that can write html (DONE)
 //  - one that can write json index files for each node
-
-// TODO: compile template
 
 // TODO: consider if we want a compile method like here: https://github.com/sindresorhus/gulp-nunjucks/blob/master/index.js
 
@@ -38,14 +36,11 @@ module.exports = (opts, folder) => {
 
 	// and let's stitch everything together
 	return Promise.all( [ configuring, templating, contentPreparing ] ).then( values => {
-		//console.log(values[0]); // config
-		//console.log(values[1]); // template
-		//console.log(values[2]); // content
-		console.log(values[2]);
 
 		// TODO: this is just squashed in here for poc purposes - needs to be prettier
+		
 		return {
-			contents : nunjucks.render(values[0].template + '.html', values[2]),
+			contents : nunjucks.render( values[0].template + '.html', values[2] ),
 			folder : folder
 		};
 	}, reason => {

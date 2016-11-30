@@ -24,6 +24,7 @@ module.exports = opts => {
 
 		let stream = this;
 
+		// TODO: somewhere in this chain we'll need to generate search index files (maybe just another newFile : search.json)
 		crust( opts , file.path ).then( product => {
 
 			// let's get the product into a file and into our stream
