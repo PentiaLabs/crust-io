@@ -2,34 +2,40 @@
 
 const crust = require('./index');
 const gutil = require('gulp-util');
+const path = require('path');
 const through = require('through2');
 
 module.exports = opts => {
 	opts = Object.assign({
+		ext: '.html'
 	}, opts);
 
-	return through.obj(function (file, enc, cb) {
+	return through.obj( function (file, enc, callback) {
+		// we don't take kindly to non-directories around here
 		if (!file.isNull()) {
-			cb(null, file);
+			callback();
 			return;
 		}
 
 		if (file.isStream()) {
-			cb(new gutil.PluginError('gulp-crust', 'Streaming not supported'));
+			callback(new gutil.PluginError('gulp-crust', 'Streaming not supported'));
 			return;
 		}
 
-		(crust( opts , file.path ), function (err, generatedHtml) {
-			if (err) {
-				cb(new gutil.PluginError('gulp-crust', err, {fileName: file.path}));
-				return;
-			}
-			console.log('###### GENERATED HTML ######');
-			console.log(generatedHtml);
-			file.contents = new Buffer(generatedHtml);
-			cb(null, file);
-		});
+		let stream = this;
 
-		cb(null, file);
+		crust( opts , file.path ).then( product => {
+
+			// let's get the product into a file and into our stream
+			let newFile = new gutil.File({
+				base: file.base,
+				path: path.join(product.folder, 'index.html'),
+				contents: new Buffer(product.contents)
+			});
+
+			stream.push(newFile);
+
+			callback(null, file);
+		});
 	});
 };

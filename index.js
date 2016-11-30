@@ -40,8 +40,14 @@ module.exports = (opts, folder) => {
 	return Promise.all( [ configuring, templating, contentPreparing ] ).then( values => {
 		//console.log(values[0]); // config
 		//console.log(values[1]); // template
+		//console.log(values[2]); // content
+		console.log(values[2]);
 
-		return nunjucks.render(values[0].template + '.html', values[2]);
+		// TODO: this is just squashed in here for poc purposes - needs to be prettier
+		return {
+			contents : nunjucks.render(values[0].template + '.html', values[2]),
+			folder : folder
+		};
 	}, reason => {
 		console.log(reason);
 	});
