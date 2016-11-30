@@ -9,24 +9,29 @@
 
 // TODO: compile template
 
+// TODO: consider if we want a compile method like here: https://github.com/sindresorhus/gulp-nunjucks/blob/master/index.js
+
 const readConfig = require('./lib/readConfig');
 const readTemplate = require('./lib/readTemplate');
 const prepareContent = require('./lib/prepareContent');
+const nunjucks = require('nunjucks');
 
 module.exports = (opts, folder) => {
 	opts = Object.assign({
 		isEditor : false // TODO: future feature - by setting this to true we can inject something into the templating, where we'll be able to do wysiwyg stuff
 	}, opts);
 
+	nunjucks.configure(opts.templatePath, { autoescape: false });
+
 	// let's just get our config file for this leaf in the file structure
 	let configuring = readConfig( folder );
 
-	// then let's get a hold of its template
+	// when configuration is done, let's get a hold of its template
 	let templating = configuring.then( config => {
 		return readTemplate( opts, config );
 	} );
 
-	// then let's prepare the content
+	// and when that's done then let's prepare the content
 	let contentPreparing = templating.then( template => {
 		return prepareContent( folder, template );
 	} );
@@ -35,8 +40,9 @@ module.exports = (opts, folder) => {
 	return Promise.all( [ configuring, templating, contentPreparing ] ).then( values => {
 		//console.log(values[0]); // config
 		//console.log(values[1]); // template
-		console.log(values[2]); // content
+
+		return nunjucks.render(values[0].template + '.html', values[2]);
 	}, reason => {
-		console.log(reason)
+		console.log(reason);
 	});
 };

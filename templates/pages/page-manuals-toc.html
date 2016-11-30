@@ -1,13 +1,5 @@
 {% extends '../master/layout.html' %}
 
-{% set sep = "\\" %}
-{% if path.split(sep).length == 1 %}
-    {% set sep = "/" %}
-{% endif %}
-
-{% set parentpath = path.split(sep) %}
-{% set category = parentpath.pop() %}
-
 {% block title %} {{ title }} {% endblock %}
 
 {% block pagetype %}

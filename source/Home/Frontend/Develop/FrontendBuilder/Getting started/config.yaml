@@ -1,5 +1,5 @@
 ---
-template: page-toc
+template: pages/page-toc
 childSort:
   - Machine requirements
   - Configuration reference

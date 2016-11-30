@@ -1,5 +1,5 @@
 ---
-template: page-toc
+template: pages/page-toc
 childSort:
   - HTML
   - CSS

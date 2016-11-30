@@ -19,16 +19,17 @@ module.exports = opts => {
 			return;
 		}
 
-    (crust( opts , file.path ), function (err, generatedHtml) {
+		(crust( opts , file.path ), function (err, generatedHtml) {
 			if (err) {
 				cb(new gutil.PluginError('gulp-crust', err, {fileName: file.path}));
 				return;
 			}
-
+			console.log('###### GENERATED HTML ######');
+			console.log(generatedHtml);
 			file.contents = new Buffer(generatedHtml);
 			cb(null, file);
 		});
 
 		cb(null, file);
-  });
+	});
 };
