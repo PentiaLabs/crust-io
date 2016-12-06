@@ -22,7 +22,8 @@ module.exports = (opts, folder) => {
 	// TODO: this is just squashed in here for poc purposes - needs to be prettier
 	nunjucks.configure(opts.templatePath, { autoescape: false });
 
-	// let's just get our config file for this leaf in the file structure
+	// let's get alle config files for each leaf in the file structure
+	// we'll need all of them to do permalinking
 	let configuring = readConfigs.read( opts.sourceFolder );
 
 	// when configuration is done, let's get a hold of its template
