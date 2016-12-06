@@ -9,7 +9,7 @@
 
 // TODO: consider if we want a compile method like here: https://github.com/sindresorhus/gulp-nunjucks/blob/master/index.js
 
-const readConfig = require('./lib/readConfig');
+const readConfigs = require('./lib/readConfigs');
 const readTemplate = require('./lib/readTemplate');
 const prepareContent = require('./lib/prepareContent');
 const nunjucks = require('nunjucks');
@@ -23,11 +23,11 @@ module.exports = (opts, folder) => {
 	nunjucks.configure(opts.templatePath, { autoescape: false });
 
 	// let's just get our config file for this leaf in the file structure
-	let configuring = readConfig( folder );
+	let configuring = readConfigs.read( opts.sourceFolder );
 
 	// when configuration is done, let's get a hold of its template
 	let templating = configuring.then( config => {
-		return readTemplate( opts, config );
+		return readTemplate( opts, config[folder] );
 	} );
 
 	// and when that's done then let's prepare the content
@@ -42,7 +42,7 @@ module.exports = (opts, folder) => {
 
 		// TODO: this is just squashed in here for poc purposes - needs to be prettier
 		return {
-			contents : nunjucks.render( config.template + '.html', content),
+			contents : nunjucks.render( config[folder].template + '.html', content),
 			folder : folder
 		};
 	}, reason => {
