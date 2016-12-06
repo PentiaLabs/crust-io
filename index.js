@@ -7,46 +7,58 @@
 //  - one that can write html (DONE)
 //  - one that can write json index files for each node
 
-// TODO: consider if we want a compile method like here: https://github.com/sindresorhus/gulp-nunjucks/blob/master/index.js
-
 const readConfigs = require('./lib/readConfigs');
-const readTemplate = require('./lib/readTemplate');
-const prepareContent = require('./lib/prepareContent');
+const templateReader = require('./lib/readTemplate');
+const contentPreparator = require('./lib/prepareContent');
 const nunjucks = require('nunjucks');
 
-module.exports = (opts, folder) => {
-	opts = Object.assign({
-		isEditor : false // TODO: future feature - by setting this to true we can inject something into the templating, where we'll be able to do wysiwyg stuff
-	}, opts);
+class Crust {
+	constructor( opts ) {
+		this.opts = Object.assign({
+			isEditor : false // TODO: future feature - by setting this to true we can inject something into the templating, where we'll be able to do wysiwyg stuff
+		}, opts);
 
-	// TODO: this is just squashed in here for poc purposes - needs to be prettier
-	nunjucks.configure(opts.templatePath, { autoescape: false });
-
-	// let's get alle config files for each leaf in the file structure
-	// we'll need all of them to do permalinking
-	let configuring = readConfigs.read( opts.sourceFolder );
-
-	// when configuration is done, let's get a hold of its template
-	let templating = configuring.then( config => {
-		return readTemplate( opts, config[folder] );
-	} );
-
-	// and when that's done then let's prepare the content
-	let contentPreparing = templating.then( template => {
-		return prepareContent( folder, template );
-	} );
-
-	// and let's stitch everything together
-	return Promise.all( [ configuring, templating, contentPreparing ] ).then( values => {
-		let config = values[0];
-		let content = values[2];
+		this.folder = '';
+		this.configs = {};
 
 		// TODO: this is just squashed in here for poc purposes - needs to be prettier
-		return {
-			contents : nunjucks.render( config[folder].template + '.html', content),
-			folder : folder
-		};
-	}, reason => {
-		console.log(reason);
-	});
-};
+		nunjucks.configure(opts.templatePath, { autoescape: false });
+	}
+
+	// get alle config files for each leaf in the file structure - we'll need all of them to do permalinking
+	configuring () {
+		return readConfigs.read( this.opts.sourceFolder );
+	}
+
+	// let's get a hold the template needed for the leaf we're currently working with
+	readTemplate ( config ) {
+		return templateReader( this.opts, config[this.folder] );
+	}
+
+	// let's prepare the content for the leaf we're currently working with
+	prepareContent ( template ) {
+		return contentPreparator( this.folder, template );
+	}
+
+	compile( folder ) {
+		this.folder = folder;
+
+		return this.configuring()
+			.then( config => {
+				this.configs = config;
+				return this.readTemplate(config);
+			})
+			.then( template => { return this.prepareContent(template); })
+			.then( content => {
+				// TODO: this is just squashed in here for poc purposes - needs to be prettier
+				return {
+					contents : nunjucks.render( this.configs[this.folder].template + '.html', content),
+					folder : this.folder
+				};
+			}, reason => {
+				console.log(reason);
+			});
+	}
+}
+
+module.exports = Crust;

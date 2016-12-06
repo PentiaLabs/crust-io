@@ -1,6 +1,6 @@
 'use strict';
 
-const crust = require('./index');
+const Crust = require('./index');
 const gutil = require('gulp-util');
 const path = require('path');
 const through = require('through2');
@@ -17,15 +17,14 @@ module.exports = opts => {
 			callback(new gutil.PluginError('gulp-crust', 'Streaming not supported'));
 			return;
 		}
-		
+
 		opts = Object.assign({
 			sourceFolder: file.base
 		}, opts);
 
 		let stream = this;
 
-		// TODO: somewhere in this chain we'll need to generate search index files (maybe just another newFile : search.json)
-		crust( opts , file.path ).then( product => {
+		(new Crust( opts ).compile( file.path ).then( product => {
 
 			// let's get the product into a file and into our stream
 			let newFile = new gutil.File({
@@ -37,6 +36,6 @@ module.exports = opts => {
 			stream.push(newFile);
 
 			callback(null, file);
-		});
+		}));
 	});
 };
