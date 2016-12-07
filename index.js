@@ -1,6 +1,7 @@
 'use strict';
 
-// TODO: sorting
+// TODO: permalinking
+// TODO: sorting (and generally sending tree structure up to front)
 // TODO: search indexing
 // TODO:
 // write a compiler that can read configuration, meta-data and content and compile through various renderers:
@@ -31,8 +32,8 @@ class Crust {
 	}
 
 	// let's get a hold the template needed for the leaf we're currently working with
-	readTemplate ( config ) {
-		return templateReader( this.opts, config[this.folder] );
+	readTemplate () {
+		return templateReader( this.opts, this.folder );
 	}
 
 	// let's prepare the content for the leaf we're currently working with
@@ -46,7 +47,7 @@ class Crust {
 		return this.configuring()
 			.then( config => {
 				this.configs = config;
-				return this.readTemplate(config);
+				return this.readTemplate();
 			})
 			.then( template => { return this.prepareContent(template); })
 			.then( content => {
