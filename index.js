@@ -1,6 +1,6 @@
 'use strict';
 
-// TODO: permalinking
+// TODO: permalinking (in the middle of being developed)
 // TODO: sorting (and generally sending tree structure up to front)
 // TODO: search indexing
 // TODO:
@@ -11,6 +11,7 @@
 const readConfigs = require('./lib/readConfigs');
 const templateReader = require('./lib/readTemplate');
 const contentPreparator = require('./lib/prepareContent');
+const permalinking = require('./lib/permalinking');
 const nunjucks = require('nunjucks');
 
 class Crust {
@@ -56,8 +57,9 @@ class Crust {
 					contents : nunjucks.render( this.configs[this.folder].template + '.html', content),
 					folder : this.folder
 				};
-			}, reason => {
-				console.log(reason);
+			})
+			.then( () => {
+				return permalinking( this.sourceFolder );
 			});
 	}
 }
