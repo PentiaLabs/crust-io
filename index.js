@@ -21,6 +21,8 @@ class Crust {
 		}, opts);
 
 		this.folder = '';
+		this.sourceFolder = opts.sourceFolder;
+		this.permalinks = {};
 		this.configs = {};
 
 		// TODO: this is just squashed in here for poc purposes - needs to be prettier
@@ -30,6 +32,11 @@ class Crust {
 	// get alle config files for each leaf in the file structure - we'll need all of them to do permalinking
 	configuring () {
 		return readConfigs.read( this.opts.sourceFolder );
+	}
+
+	// get permalink map
+	permalinking () {
+		return permalinking( this.sourceFolder );
 	}
 
 	// let's get a hold the template needed for the leaf we're currently working with
@@ -48,18 +55,27 @@ class Crust {
 		return this.configuring()
 			.then( config => {
 				this.configs = config;
+				return this.permalinking();
+			})
+			.then( permalinks => {
+				this.permalinks = permalinks;
 				return this.readTemplate();
 			})
-			.then( template => { return this.prepareContent(template); })
+			.then( template => {
+				return this.prepareContent(template);
+			})
 			.then( content => {
 				// TODO: this is just squashed in here for poc purposes - needs to be prettier
+				content = Object.assign( content, this.permalinks );
+
 				return {
 					contents : nunjucks.render( this.configs[this.folder].template + '.html', content),
 					folder : this.folder
 				};
 			})
-			.then( () => {
-				return permalinking( this.sourceFolder );
+			.catch( reason => {
+				// TODO: handle promise rejection properly by sending reason back
+				console.log( reason );
 			});
 	}
 }

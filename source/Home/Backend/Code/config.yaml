@@ -1,5 +1,6 @@
 ---
 template: pages/page-toc
+permalink: testing
 childSort:
   - Example 1
   - Example 2
